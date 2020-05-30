@@ -1,0 +1,44 @@
+This lib is all about attaching typical, frequent use cases for any
+client lib.
+
+For example, imagine a physics problem in need of a material database.
+
+A client defines a class describing the physics. A client user requests a
+material from the database, this db class returns the material parameter to
+the physics class in the form of:
+args, kwargs (arguments, and key-work arguments - Python style)
+
+The author of the client physics class might have been considering writing
+a database query, but instead is freed from doing anything (almost)*.
+
+* Actually the client author still needs to specify a database file, but
+at least has no need of writing db code.
+
+When and why is this best?
+
+Vs. sub-classes and wrappers:
+    You can build a series of sub-classes with hard-wired input parameters
+        to cover a series of cases.
+    Similarly you can wrap your function in a series with hard-wired inputs.
+    And those may be good options.
+    args db may be favored only for large expandable case series
+    I.e.:
+        args databases separate cases from code. This may improve work-flow.
+        args databases may reduce redundant typing.
+
+Vs. pickle:
+    You can build a series of instances of your class and then pickle them.
+    (For functions, pickle is no solution.)
+    First, you can't update class code without breaking your whole case series.
+        args databases will only break when you change the input arguments.
+        You can still recover by editing all the entries in your args database.
+        Due to readability and streamlining of your args database, this is
+        only as difficult as it needs to be.
+    Second, args db allows you to override any args you want. So it's
+        trivial to build on an existing case with limited modification.
+    Third, args db is easier to use.
+
+Additionally, there are times when you or a user needs to overrule the database 
+for custom cases, or build on a case with limited modification.
+These are supported simply by overriding any parameter.
+

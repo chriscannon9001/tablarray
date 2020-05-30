@@ -1,0 +1,43 @@
+Concept: function for csv material database lookup
+	... I might think about sql db too...
+
+embed parameters and values together in the csv format:
+
+keylist header[1:n]	_matrix label1a 1b label2a .. labelj end_
+key1	value[1:n]	str1
+			str2
+			..
+			stri
+..
+
+... 2D max matrices make easier format. But Sellmeier and Gain matrices are 3D
+	... so I need to write 3D compatible table logic...
+	... unfortunate but feasible...
+
+def lookup_csv_db(filename, keyname, headerformat=None, matrixformat=None,
+			verbose=False):
+	Identify matrix frames (0 to N matrices)
+	Autodetect i period (number of axes)
+	Search for keyname
+	Scan headers,values -> kwargs{}
+		(Enforce headerformat)
+	Load matrix headers -> str[], label[]
+		(Enforce matrixfomat)
+	Load matrices -> matrices[i,j,k]
+
+API:
+MaterialClass.__init__ 
+  always accepts
+(**kwargs, matrices[i,j,k])
+  so you can either do:
+	obj1 = MaterialClass(lookup_csv_db(filename, keyname...))
+  or equivalent programatic hardcoding will still work fine:
+	obj2 = MaterialClass(arg1=value1, arg2=value2, arg3=matrix[]...)
+
+
+History:
+I initially implemented separate CSV readers for optics classes which can
+benefit from material databases. Result 
+$ cloc lasergain.py laseroptics.py sellmeier.py
+... 487
+Now I'm going to update and retest all these classes using my new API...
