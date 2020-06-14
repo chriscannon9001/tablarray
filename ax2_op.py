@@ -17,7 +17,7 @@ def _axial2_broadcast(func):
     def wrapped_cum_atc(a, axis=None, **kwargs):
         if hasattr(a, 'ts') and hasattr(a, 'view'):
             axis = a._viewdims[axis]
-            rarray = func(a.array, axis=axis, **kwargs)
+            rarray = func(a.base, axis=axis, **kwargs)
             rclass = a.__class__
             return rclass(rarray, a.ts.cdim, a.view)
         else:

@@ -64,17 +64,17 @@ class TablArray(object):
         or taShapes type
     """
     def __init__(self, a, cdim, view='cell'):
-        # ensure type of self.array
+        # ensure type of self.base
         if isinstance(a, np.ndarray):
-            self.array = a          # based on ndarray
+            self.base = a          # based on ndarray
         elif hasattr(a, 'ts'):
-            self.array = a.array    # based on ATC type
+            self.base = a.base    # based on ATC type
             cdim = a.ts
         else:
-            self.array = np.array(a)  # try casting to ndarray
+            self.base = np.array(a)  # try casting to ndarray
         # ts has derived parameters
         if np.isscalar(cdim):
-            self.ts = tashape.taShape((self.array.shape), cdim)
+            self.ts = tashape.taShape((self.base.shape), cdim)
         elif hasattr(cdim, 'cdim') and hasattr(cdim, 'combine'):
             # if cdim is of taShapes type
             self.ts = cdim
@@ -94,19 +94,19 @@ class TablArray(object):
     def __view__(self, view):
         """returns an ATC with a different .setview(view), using
         pass-by-reference not copy so that changes do affect this original"""
-        return TablArray(self.array, self.ts, view)
+        return TablArray(self.base, self.ts, view)
 
     def __copy__(self):
         """returns an independent copy"""
-        return TablArray(copy.copy(self.array), self.ts.cdim, self.view)
+        return TablArray(copy.copy(self.base), self.ts.cdim, self.view)
 
     def __deepcopy__(self, memo):
         """returns an indepenedent deepcopy"""
-        return TablArray(copy.deepcopy(self.array), self.ts.cdim, self.view)
+        return TablArray(copy.deepcopy(self.base), self.ts.cdim, self.view)
 
     def __str__(self):
         sval = ''
-        sval += '%s' % self.array
+        sval += '%s' % self.base
         sval += ' %s' % self.ts
         return sval
 
@@ -128,6 +128,7 @@ class TablArray(object):
             self._viewcdim = self.ts.cdim
             self.shape = self.ts.tshape
             self.ndim = self.ts.tdim
+            self.size = self.ts.tsize
             if view == 'bcast':
                 self._bcast = True
         elif view == 'cell':
@@ -137,36 +138,38 @@ class TablArray(object):
             self._viewcdim = 0
             self.shape = self.ts.cshape
             self.ndim = self.ts.cdim
+            self.size = self.ts.csize
         elif view == 'array':
             ndim = self.ts.tdim + self.ts.cdim
             self._viewdims = tuple(range(ndim))
             self._viewcdim = 0
-            self.shape = self.array.shape
-            self.ndim = self.array.ndim
+            self.shape = self.base.shape
+            self.ndim = self.base.ndim
+            self.size = self.base.size
         else:
             raise ValueError
         # keep the view string handy
         self.view = view
 
-    # ===== 'inheriting' from .array ====
+    # ===== 'inheriting' from .base ====
     def __getattr__(self, attr):
         # check in my dictionary first
         if attr in self.__dict__:
             return getattr(self, attr)
-        # maybe inherit all else from .array, or maybe not?
-        # LOG.warning('Passing self.array.%s ...dangerous?', attr)
-        return getattr(self.array, attr)
+        # maybe inherit all else from .base, or maybe not?
+        # LOG.warning('Passing self.base.%s ...dangerous?', attr)
+        return getattr(self.base, attr)
 
     # ==== getters have delayed iteration, for properties which are views
     @property
     def real(self):
         """Return the real part of a complex ATC"""
-        return TablArray(self.array.real, self.ts.cdim, self.view)
+        return TablArray(self.base.real, self.ts.cdim, self.view)
 
     @property
     def imag(self):
         """Return the imaginary part of a complex ATC"""
-        return TablArray(self.array.imag, self.ts.cdim, self.view)
+        return TablArray(self.base.imag, self.ts.cdim, self.view)
 
     @property
     def bcast(self):
@@ -182,6 +185,11 @@ class TablArray(object):
     def table(self):
         """Return a view of an ATC with tabular aligned indexing"""
         return self.__view__('table')
+
+    @property
+    def array(self):
+        """Return a view of a TablArray with simple array indexing"""
+        return self.__view__('array')
 
     def _process_indx(self, indices):
         # we want type list for this process
@@ -208,15 +216,15 @@ class TablArray(object):
     def __getitem__(self, indices):
         indices, cdim = self._process_indx(indices)
         # once an ATC, always an ATC
-        rarray = self.array.__getitem__(indices)
+        rarray = self.base.__getitem__(indices)
         return TablArray(rarray, cdim, self.view)
 
     def __setitem__(self, indices, val):
         if isinstance(val, TablArray):
             # strip ATC types - only numpy.ndarray can be set
-            val = val.array
+            val = val.base
         indices, cdim = self._process_indx(indices)
-        return self.array.__setitem__(indices, val)
+        return self.base.__setitem__(indices, val)
 
     # bin_op has numpy binary operators plus an ATC-wrap
     __add__ = bin_op.add

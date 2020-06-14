@@ -34,20 +34,20 @@ def _binary_broadcast(func):
         if hasattr(a, 'ts') and hasattr(b, 'ts'):
             # if both are TablArray, then use tablarray broadcasting
             cdim, bc = a.ts.combine(b.ts)
-            rarray = bc.calc_function(func, a.array, b.array, *args, **kwargs)
+            rarray = bc.calc_function(func, a.base, b.base, *args, **kwargs)
             rclass = a.__class__
             view = a.view
         elif hasattr(a, 'ts'):
             b = _cast_other_type(b, a)
             # if only one is TablArray, then use numpy array broadcast
-            rarray = func(a.array, b, *args, **kwargs)
+            rarray = func(a.base, b, *args, **kwargs)
             rclass = a.__class__
             # assume the result has the same cdim as a.ts.cdim
             cdim = a.ts.cdim
             view = a.view
         elif hasattr(b, 'ts'):
             a = _cast_other_type(a, b)
-            rarray = func(a, b.array, *args, **kwargs)
+            rarray = func(a, b.base, *args, **kwargs)
             rclass = b.__class__
             cdim = b.ts.cdim
             view = b.view

@@ -13,7 +13,7 @@ import numpy as np
 from . import tashape
 
 
-class dbATC(object):
+class dbTA(object):
     """databaseTable - a dict of broadcastable ATC's (Array/TableCell's)"""
     def __init__(self, **kwargs):
         """

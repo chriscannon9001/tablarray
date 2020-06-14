@@ -64,11 +64,11 @@ def matmul(a, b):
     # setup the subscripts to achieve matmul
     if a.ts.cdim == 2 and b.ts.cdim == 1:
         # matmul 2d matrix by vector
-        rarray = _matmul_MV(a.array, b.array)
+        rarray = _matmul_MV(a.base, b.base)
         return rclass(rarray, 1, a.view)
     elif a.ts.cdim == 2 and b.ts.cdim == 2:
         # matmul 2d matrix by 2d matrix
-        rarray = _matmul_MM(a.array, b.array)
+        rarray = _matmul_MM(a.base, b.base)
         return rclass(rarray, 2, a.view)
     else:
         raise ValueError

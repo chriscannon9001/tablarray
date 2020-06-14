@@ -18,7 +18,7 @@ def cummatmul(a, axis):
     Always implies cumulative axis is one of ts.tshape."""
     a = mmul_ta_signature(a)
     # get a blank ATC for the result
-    rarray = np.zeros(a.array.shape, dtype=a.array.dtype)
+    rarray = np.zeros(a.base.shape, dtype=a.base.dtype)
     rclass = a.__class__
     new_atc = rclass(rarray, a.ts.cdim, a.view)
     # get a table view of the result ATC

@@ -117,16 +117,16 @@ class ClassifyMethods(object):
 
 if __name__ == '__main__':
     import numpy as np
-    from scitables import npatc
-    clnp = ClassifyMethods.from_pkg(np)
-    clsc = ClassifyMethods.from_pkg(npatc)
-    cld1 = clnp - clsc
-    cld2 = clsc - clnp
-    print('=== bin_ops not in npatc ===')
-    print(cld1.bin_ops)
-    print('=== elw_ops not in npatc ===')
-    print(cld1.elw_ops)
-    print('=== ax_ops not in npatc ===')
-    print(cld1.ax_ops)
-    print('=== new array funcs not in npatc')
-    print(cld2.new)
+    import tablarray as ta
+    cl_np = ClassifyMethods.from_pkg(np)
+    cl_ta = ClassifyMethods.from_pkg(ta)
+    cl_del1 = cl_np - cl_ta
+    cl_del2 = cl_ta - cl_np
+    print('=== bin_ops not in tablarray ===')
+    print(cl_del1.bin_ops)
+    print('=== elw_ops not in tablarray ===')
+    print(cl_del1.elw_ops)
+    print('=== ax_ops not in tablarray ===')
+    print(cl_del1.ax_ops)
+    print('=== new array funcs not in tablarray')
+    print(cl_del1.new)

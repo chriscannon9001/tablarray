@@ -13,7 +13,7 @@ from . import ta
 
 def mmul_ta_signature(arg):
     """Given a TablArray or np.ndarray, return a TablArray"""
-    if hasattr(arg, 'ts') and hasattr(arg, 'array'):
+    if hasattr(arg, 'ts') and hasattr(arg, 'base'):
         # arg is TablArray type
         array = arg
     # elif (type(arg) is tuple and len(arg) == 2

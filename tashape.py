@@ -17,8 +17,10 @@ class taShape(object):
     def __init__(self, shape, cdim):
         self.cdim = cdim
         self.tdim = len(shape) - cdim
-        self.cshape = shape[self.tdim:]   # cellular shape
-        self.tshape = shape[:self.tdim]   # tabular shape
+        self.cshape = shape[self.tdim:]     # cellular shape
+        self.csize = np.prod(self.cshape)   # cellular number of elements
+        self.tshape = shape[:self.tdim]     # tabular shape
+        self.tsize = np.prod(self.tshape)   # tabular number of elements
 
     def __str__(self):
         return 't%s|c%s' % (self.tshape, self.cshape)

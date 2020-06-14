@@ -25,6 +25,7 @@ from .bin_op import *
 from .cmatmul import *
 from .db import *
 from .el_op import *
+from .misc import *
 from .mmul import *
 from .new import *
 from .ta import *

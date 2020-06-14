@@ -35,7 +35,7 @@ def _axial_broadcast(func):
                     # if one of the tabular dims collapses to a scalar,
                     # the number of cdims is unchanged
                     cdim = a.ts.cdim
-            rarry = func(a.array, axis=axis, **kwargs)
+            rarry = func(a.base, axis=axis, **kwargs)
             rclass = a.__class__  # expecting ATC class
             return rclass(rarry, cdim, a.view)
         else:
