@@ -10,11 +10,12 @@ import copy
 import logging
 import numpy as np
 
-from . import tashape
 from . import ax_op
 from . import ax2_op
 from . import bin_op
 from . import el_op
+from . import tashape
+from . import tdimstr
 from .op12swap import op12_swap
 
 LOG = logging.getLogger(__name__)
@@ -106,7 +107,7 @@ class TablArray(object):
 
     def __str__(self):
         sval = ''
-        sval += '%s' % self.base
+        sval += '%s' % tdimstr.array2str_plus_tdim(self.base, self.ts.tdim)
         sval += ' %s' % self.ts
         return sval
 
