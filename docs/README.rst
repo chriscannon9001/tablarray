@@ -9,17 +9,35 @@ tablarray was originally developed to manage large numbers of optical modes.
 
 This is a very short example:
 
+
+
+
 .. code-block:: python
 
-	$ import numpy as np
-	$ import tablarray as tab
-	$ a = tab.TablArray.from_tile(np.identity(2), (3, 1))
-	$ print(a.table.shape)
+	import numpy as np
+	import tablarray as tab
+	a = tab.TablArray.from_tile(np.identity(2), (3, 1))
+	print(a.table.shape)
+
+::
+
 	(3, 1)
-	$ print(a.cell.shape)
+
+.. code-block:: python
+
+	print(a.cell.shape)
+
+::
+
 	(2, 2)
-	$ a.cell[0, 1].table[:, :] += [[4, 5, 6]]
-	$ print(a)
+
+.. code-block:: python
+
+	a.cell[0, 1].table[:, :] += [[4, 5, 6]]
+	print(a)
+
+::
+
 	[[|[[1. 4.] |
 		| [0. 1.]]|]
 
@@ -31,7 +49,7 @@ This is a very short example:
 	 [|[[1. 6.] |
 		| [0. 1.]]|]] t(3, 1)|c(2, 2)
 
-The '|' marks separation between tabular and cellular structure.
+Those '|' separate tabular vs cellular structure.
 
 Installation
 ============

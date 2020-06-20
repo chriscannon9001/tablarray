@@ -9,7 +9,7 @@ Created on Tue May 19 21:22:26 2020
 import functools
 import numpy as np
 
-from . import ta
+from .. import ta
 
 
 def _atc_new(func):

@@ -18,14 +18,9 @@ Created on Fri May 15 17:40:41 2020
 """
 
 from . import linalg
+from .np2ta import *
 
-from .ax_op import *
-from .ax2_op import *
-from .bin_op import *
 from .cmatmul import *
 from .db import *
-from .el_op import *
-from .misc import *
 from .mmul import *
-from .new import *
 from .ta import *

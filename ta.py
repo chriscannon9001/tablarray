@@ -10,13 +10,13 @@ import copy
 import logging
 import numpy as np
 
-from . import ax_op
-from . import ax2_op
-from . import bin_op
-from . import el_op
+from .np2ta import ax_op
+from .np2ta import ax2_op
+from .np2ta import bin_op
+from .np2ta import el_op
+from .np2ta.op12swap import op12_swap
 from . import tashape
 from . import tdimstr
-from .op12swap import op12_swap
 
 LOG = logging.getLogger(__name__)
 
