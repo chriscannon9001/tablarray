@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+(This isn't testing framework)
+
+Run this script to scan numpy for functions that I didn't yet implement in 
+
 Created on Tue May 19 17:46:31 2020
 
 @author: chris

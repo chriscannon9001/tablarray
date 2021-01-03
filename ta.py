@@ -34,12 +34,12 @@ class TablArray(object):
 
     Selected signatures::
 
-        a1 = ATC(a, 1)
-        a2 = ATC.from_tile(cell, (2, 3))
-        c = a2.matmul(a1)
+        import tablarray as ta        
+        a1 = ta.TablArray(a, 1)
+        a2 = ta.TablArray.from_tile(cell, (2, 3))
+        c = ta.matmul(a2, a1)
         d = c + .03 * a2
-        d.setview('cell')
-        e = d[0, :]
+        e = ta.cell(d)[0, :]
 
     Principles
     ----------
@@ -172,6 +172,8 @@ class TablArray(object):
         """Return the imaginary part of a complex ATC"""
         return TablArray(self.base.imag, self.ts.cdim, self.view)
 
+    '''
+    # better for duck-typing to use tablarray.bcast(), .table() etc.
     @property
     def bcast(self):
         """Return a view of an ATC with broadcast-style tabular indexing"""
@@ -191,6 +193,7 @@ class TablArray(object):
     def array(self):
         """Return a view of a TablArray with simple array indexing"""
         return self.__view__('array')
+    '''
 
     def _process_indx(self, indices):
         # we want type list for this process

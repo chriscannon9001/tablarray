@@ -17,7 +17,12 @@ def _element_op_cast(func):
         if hasattr(x, 'ts') and hasattr(x, 'view'):
             rarray = func(x, *args, **kwargs)
             rclass = x.__class__
-            return rclass(rarray, x.ts.cdim, x.view)
+            # once a TablArray, usually a TablArray
+            if rarray.ndim == x.ts.cdim:
+                return rarray
+            else:
+                return rclass(rarray, x.ts.cdim, x.view)
+            # return rclass(rarray, x.ts.cdim, x.view)
         else:
             # a is presumably array-like
             return func(x, *args, **kwargs)

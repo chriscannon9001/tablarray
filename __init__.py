@@ -24,3 +24,4 @@ from .cmatmul import *
 from .db import *
 from .mmul import *
 from .ta import *
+from .views import *

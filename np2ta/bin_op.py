@@ -55,7 +55,10 @@ def _binary_broadcast(func):
             # if neither operand is TablArray, just fall back on numpy
             return func(a, b, *args, **kwargs)
         # once a TablArray, always a TablArray
-        return rclass(rarray, cdim, view)
+        if rarray.ndim == cdim:
+            return rarray
+        else:
+            return rclass(rarray, cdim, view)
     return wrap_bin_bcast
 
 

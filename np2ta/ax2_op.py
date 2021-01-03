@@ -19,7 +19,12 @@ def _axial2_broadcast(func):
             axis = a._viewdims[axis]
             rarray = func(a.base, axis=axis, **kwargs)
             rclass = a.__class__
-            return rclass(rarray, a.ts.cdim, a.view)
+            # once a TablArray, usually a TablArray
+            if rarray.ndim == a.ts.cdim:
+                return rarray
+            else:
+                return rclass(rarray, a.ts.cdim, a.view)
+            # return rclass(rarray, a.ts.cdim, a.view)
         else:
             # pass through to numpy
             return func(a, axis=axis, **kwargs)

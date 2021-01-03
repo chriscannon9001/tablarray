@@ -15,9 +15,9 @@ This is a very short example:
 .. code-block:: python
 
 	import numpy as np
-	import tablarray as tab
-	a = tab.TablArray.from_tile(np.identity(2), (3, 1))
-	print(a.table.shape)
+	import tablarray as ta
+	a = ta.TablArray.from_tile(np.identity(2), (3, 1))
+	print(ta.table(a).shape)
 
 ::
 
@@ -25,7 +25,7 @@ This is a very short example:
 
 .. code-block:: python
 
-	print(a.cell.shape)
+	print(ta.cell(a).shape)
 
 ::
 
@@ -33,7 +33,7 @@ This is a very short example:
 
 .. code-block:: python
 
-	a.cell[0, 1].table[:, :] += [[4, 5, 6]]
+    	ta.table(ta.cell(a)[0, 1])[:, :] += [[4, 5, 6]]
 	print(a)
 
 ::
