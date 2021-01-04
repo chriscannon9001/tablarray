@@ -9,6 +9,8 @@ Created on Sun May 24 16:37:02 2020
 import functools
 import numpy as np
 
+from .. import _io
+
 
 def _mat1_rN_atc(func, min_cdim, *rv_cdims):
     """ATC-wrap for numpy.linalg of the form func(array)->array-like"""
@@ -28,7 +30,9 @@ def _mat1_rN_atc(func, min_cdim, *rv_cdims):
             rval2 = [None] * N_rval
             for i in range(N_rval):
                 # print(rv_cdims[i])
-                rval2[i] = rclass(rvals[i], rv_cdims[i], view=a.view)
+                # rval2[i] = rclass(rvals[i], rv_cdims[i], view=a.view)
+                rval2[i] = _io.rval_once_a_ta(
+                    rclass, rvals[i], rv_cdims[i], a.view)
             return tuple(rval2)
         else:
             return func(a, *args, **kwargs)

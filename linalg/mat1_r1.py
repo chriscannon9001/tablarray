@@ -9,6 +9,8 @@ Created on Sun May 24 14:07:30 2020
 import functools
 import numpy as np
 
+from .. import _io
+
 
 def _mat1_r1_atc(func, min_cdim, rval_cdim):
     """ATC-wrap for numpy.linalg of the form func(array)->array-like"""
@@ -21,7 +23,8 @@ def _mat1_r1_atc(func, min_cdim, rval_cdim):
                         + 'Array must be at least %d-dimensional' % min_cdim)
             rarray = func(a.cell, *args, **kwargs)
             rclass = a.__class__
-            return rclass(rarray, rval_cdim, view=a.view)
+            return _io.rval_once_a_ta(rclass, rarray, rval_cdim, a.view)
+            # return rclass(rarray, rval_cdim, view=a.view)
         else:
             return func(a, *args, **kwargs)
     return wrapped_mat1_r1_atc

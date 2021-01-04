@@ -17,6 +17,7 @@ from .np2ta import el_op
 from .np2ta.op12swap import op12_swap
 from . import tashape
 from . import tdimstr
+from . import _io
 
 LOG = logging.getLogger(__name__)
 
@@ -64,11 +65,11 @@ class TablArray(object):
         cellular dim; normally 0 - scalar, 1 - vector, 2 - matrix
         or taShapes type
     """
-    def __init__(self, a, cdim, view='cell'):
+    def __init__(self, a, cdim, view='table'):
         # ensure type of self.base
         if isinstance(a, np.ndarray):
             self.base = a          # based on ndarray
-        elif hasattr(a, 'ts'):
+        elif _io.quackslike_Tablarray(a):
             self.base = a.base    # based on ATC type
             cdim = a.ts
         else:
@@ -85,7 +86,7 @@ class TablArray(object):
         self.setview(view)
 
     @classmethod
-    def from_tile(cls, cell, tshape, view='cell'):
+    def from_tile(cls, cell, tshape, view='table'):
         """create a table by tiling a cell"""
         cdim = 0 if np.isscalar(cell) else cell.ndim
         shape2 = tuple([1] * cdim)
@@ -221,7 +222,8 @@ class TablArray(object):
         indices, cdim = self._process_indx(indices)
         # once an ATC, always an ATC
         rarray = self.base.__getitem__(indices)
-        return TablArray(rarray, cdim, self.view)
+        #return TablArray(rarray, cdim, self.view)
+        return _io.rval_once_a_ta(TablArray, rarray, cdim, self.view)
 
     def __setitem__(self, indices, val):
         if isinstance(val, TablArray):

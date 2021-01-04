@@ -9,20 +9,18 @@ Created on Mon May 18 18:58:22 2020
 import functools
 import numpy as np
 
+from .. import _io
+
 
 def _element_op_cast(func):
     """wrap element-wise numpy functions - once an ATC, always an ATC"""
     @functools.wraps(func)
     def wrap_elop_cast(x, *args, **kwargs):
-        if hasattr(x, 'ts') and hasattr(x, 'view'):
+        if _io.quackslike_Tablarray(a):
             rarray = func(x, *args, **kwargs)
             rclass = x.__class__
             # once a TablArray, usually a TablArray
-            if rarray.ndim == x.ts.cdim:
-                return rarray
-            else:
-                return rclass(rarray, x.ts.cdim, x.view)
-            # return rclass(rarray, x.ts.cdim, x.view)
+            return _io.rval_once_a_ta(rclass, rarray, x.ts.cdim, x.view)
         else:
             # a is presumably array-like
             return func(x, *args, **kwargs)

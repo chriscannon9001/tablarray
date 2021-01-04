@@ -33,21 +33,31 @@ This is a very short example:
 
 .. code-block:: python
 
-    	ta.table(ta.cell(a)[0, 1])[:, :] += [[4, 5, 6]]
+	# selecting one corner of every cell
+	print(ta.table(ta.cell(a)[0, 1])[:, :])
+
+::
+
+	[[|0.|]
+	 [|0.|]
+	 [|0.|]] t(3, 1)|c()
+
+.. code-block:: python
+
+	# align addition to one corner of every cell
+	ta.table(ta.cell(a)[0, 1])[:, :] += [[4, 5, 6]]
 	print(a)
 
 ::
 
 	[[|[[1. 4.] |
-		| [0. 1.]]|]
-
+	  | [0. 1.]]|]
 
 	 [|[[1. 5.] |
-		| [0. 1.]]|]
-
+	  | [0. 1.]]|]
 
 	 [|[[1. 6.] |
-		| [0. 1.]]|]] t(3, 1)|c(2, 2)
+	  | [0. 1.]]|]] t(3, 1)|c(2, 2)
 
 Those '|' separate tabular vs cellular structure.
 
@@ -59,9 +69,9 @@ Status
 ======
 Alpha - some features are stable enough:
 
-* Many required features are now implemented and not expected to change.
-* A few of those implemented features need further adaptation for some cases.
-* Some significant features are missing.
+* Many features are implemented and not expected to change.
+* A few of those features need further adaptation for certain cases.
+* Some features are still missing.
 * Packaging needs work.
 
 Todo
