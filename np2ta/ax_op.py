@@ -9,15 +9,14 @@ Created on Mon May 18 17:10:44 2020
 import functools
 import numpy as np
 
-from .. import _io
-
+from .. import base
 
 def _axial_broadcast(func):
     """ACT compatibility for unary operands where one or more axes transform
     to a scalar (axis -> scalar)"""
     @functools.wraps(func)
     def wrap_ax_bcast(a, axis=None, **kwargs):
-        if _io.quackslike_Tablarray(a):
+        if base.istablarray(a):
             if axis is None:
                 axis = a._viewdims
                 cdim = a._viewcdim
@@ -40,7 +39,7 @@ def _axial_broadcast(func):
             rarray = func(a.base, axis=axis, **kwargs)
             rclass = a.__class__  # probably TablArray
             # once a TablArray, usually a TablArray
-            return _io.rval_once_a_ta(rclass, rarray, cdim, a.view)
+            return base._rval_once_a_ta(rclass, rarray, cdim, a.view)
         else:
             # just passthrough
             return func(a, axis=axis, **kwargs)

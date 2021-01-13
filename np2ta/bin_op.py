@@ -12,7 +12,7 @@ Created on Sun May 17 18:17:59 2020
 import functools
 import numpy as np
 
-from .. import _io
+from .. import base
 
 
 def _cast_other_type(other, TablArray):
@@ -33,13 +33,13 @@ def _binary_broadcast(func):
     @functools.wraps(func)
     def wrap_bin_bcast(a, b, *args, **kwargs):
         """depending on the types of a and b, find a suitable broadcasting"""
-        if _io.quackslike_Tablarray(a) and _io.quackslike_Tablarray(b):
+        if base.istablarray(a) and base.istablarray(b):
             # if both are TablArray, then use tablarray broadcasting
             cdim, bc = a.ts.combine(b.ts)
             rarray = bc.calc_function(func, a.base, b.base, *args, **kwargs)
             rclass = a.__class__
             view = a.view
-        elif _io.quackslike_Tablarray(a):
+        elif base.istablarray(a):
             b = _cast_other_type(b, a)
             # if only one is TablArray, then use numpy array broadcast
             rarray = func(a.base, b, *args, **kwargs)
@@ -47,7 +47,7 @@ def _binary_broadcast(func):
             # assume the result has the same cdim as a.ts.cdim
             cdim = a.ts.cdim
             view = a.view
-        elif _io.quackslike_Tablarray(b):
+        elif base.istablarray(b):
             a = _cast_other_type(a, b)
             rarray = func(a, b.base, *args, **kwargs)
             rclass = b.__class__
@@ -57,7 +57,7 @@ def _binary_broadcast(func):
             # if neither operand is TablArray, just fall back on numpy
             return func(a, b, *args, **kwargs)
         # once a TablArray, always a TablArray
-        return _io.rval_once_a_ta(rclass, rarray, cdim, view)
+        return base._rval_once_a_ta(rclass, rarray, cdim, view)
     return wrap_bin_bcast
 
 

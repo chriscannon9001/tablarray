@@ -3,7 +3,7 @@
 """
 (This isn't testing framework)
 
-Run this script to scan numpy for functions that I didn't yet implement in 
+Run this script to scan numpy for functions that aren't implemented in TablArray
 
 Created on Tue May 19 17:46:31 2020
 
@@ -133,4 +133,16 @@ if __name__ == '__main__':
     print('=== ax_ops not in tablarray ===')
     print(cl_del1.ax_ops)
     print('=== new array funcs not in tablarray')
+    print(cl_del1.new)
+    cl_np = ClassifyMethods.from_pkg(np.linalg)
+    cl_ta = ClassifyMethods.from_pkg(ta.linalg)
+    cl_del1 = cl_np - cl_ta
+    cl_del2 = cl_ta - cl_np
+    print('=== bin_ops not in tablarray.linalg ===')
+    print(cl_del1.bin_ops)
+    print('=== elw_ops not in tablarray.linalg ===')
+    print(cl_del1.elw_ops)
+    print('=== ax_ops not in tablarray.linalg ===')
+    print(cl_del1.ax_ops)
+    print('=== new array funcs not in tablarray.linalg')
     print(cl_del1.new)

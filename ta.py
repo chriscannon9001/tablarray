@@ -15,9 +15,10 @@ from .np2ta import ax2_op
 from .np2ta import bin_op
 from .np2ta import el_op
 from .np2ta.op12swap import op12_swap
+from . import re
 from . import tashape
 from . import tdimstr
-from . import _io
+from . import base
 
 LOG = logging.getLogger(__name__)
 
@@ -27,15 +28,15 @@ class TablArray(object):
     TablArray (Table-Array-Cell)
     ----------------------
     When the best structure of data is any-dimensional cells arranged
-    in any-dimensional tables - TablArray provides fast numpy-like array operations
-    with broadcasting to handle both cellular-dim (cdim)
+    in any-dimensional tables - TablArray provides fast numpy-like array
+    operations with broadcasting to handle both cellular-dim (cdim)
     and tabular-dim (tdim) at once. Indexing and slicing follow rules of
     different views; .cell[] .table[] or .array[].
     Originally developed to manage large numbers of optical modes.
 
     Selected signatures::
 
-        import tablarray as ta        
+        import tablarray as ta
         a1 = ta.TablArray(a, 1)
         a2 = ta.TablArray.from_tile(cell, (2, 3))
         c = ta.matmul(a2, a1)
@@ -69,7 +70,7 @@ class TablArray(object):
         # ensure type of self.base
         if isinstance(a, np.ndarray):
             self.base = a          # based on ndarray
-        elif _io.quackslike_Tablarray(a):
+        elif base.istablarray(a):
             self.base = a.base    # based on ATC type
             cdim = a.ts
         else:
@@ -173,8 +174,7 @@ class TablArray(object):
         """Return the imaginary part of a complex ATC"""
         return TablArray(self.base.imag, self.ts.cdim, self.view)
 
-    '''
-    # better for duck-typing to use tablarray.bcast(), .table() etc.
+    # for duck-typing it's often better to use tablarray.bcast(), .table() etc.
     @property
     def bcast(self):
         """Return a view of an ATC with broadcast-style tabular indexing"""
@@ -194,7 +194,6 @@ class TablArray(object):
     def array(self):
         """Return a view of a TablArray with simple array indexing"""
         return self.__view__('array')
-    '''
 
     def _process_indx(self, indices):
         # we want type list for this process
@@ -222,8 +221,8 @@ class TablArray(object):
         indices, cdim = self._process_indx(indices)
         # once an ATC, always an ATC
         rarray = self.base.__getitem__(indices)
-        #return TablArray(rarray, cdim, self.view)
-        return _io.rval_once_a_ta(TablArray, rarray, cdim, self.view)
+        # return TablArray(rarray, cdim, self.view)
+        return base._rval_once_a_ta(TablArray, rarray, cdim, self.view)
 
     def __setitem__(self, indices, val):
         if isinstance(val, TablArray):
@@ -274,3 +273,13 @@ class TablArray(object):
     # cumulative functions
     cumprod = ax2_op.cumprod
     cumsum = ax2_op.cumsum
+
+    # reshaping and flattening that considers TablArray form
+    reshape = re.reshape
+    ravel = re.ravel
+
+    def flatten(self, order='C'):
+        """"Return a copy of the TablArray collapsed
+        along tabular or cellular structure into 1 dimension
+        """
+        return copy.copy(re.ravel(self, order=order))

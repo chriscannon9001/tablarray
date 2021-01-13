@@ -20,8 +20,10 @@ Created on Fri May 15 17:40:41 2020
 from . import linalg
 from .np2ta import *
 
+from .assy import *
 from .cmatmul import *
-from .db import *
+#from .misc import *
 from .mmul import *
+from .re import *
 from .ta import *
 from .views import *

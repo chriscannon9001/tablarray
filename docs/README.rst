@@ -79,6 +79,5 @@ Todo
 * Add pretty strings to make TablArray objects more fun to interact with.
 * Provide setup.py
 * Add example documentation
-* Add flattening features (ravel, flatiter, flatten)
 * unittests
 * benchmark, cythonize, re-benchmark
