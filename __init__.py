@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-ATC - 'Array-Tabular-Cellular' or tables of cells
+TablArray or tables of cells
 When the best structure of data is any-dimensional cells arranged
 in any-dimensional tables - ATC provides fast numpy-like array
 operations with broadcasting to handle both cellular-dimensions
@@ -21,9 +21,11 @@ from . import linalg
 from .np2ta import *
 
 from .assy import *
+from .base import *
 from .cmatmul import *
 #from .misc import *
 from .mmul import *
 from .re import *
 from .ta import *
+from .taprint import *
 from .views import *

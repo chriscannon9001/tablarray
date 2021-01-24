@@ -17,7 +17,8 @@ from .np2ta import el_op
 from .np2ta.op12swap import op12_swap
 from . import re
 from . import tashape
-from . import tdimstr
+#from . import tdimstr
+from . import taprint
 from . import base
 
 LOG = logging.getLogger(__name__)
@@ -107,11 +108,7 @@ class TablArray(object):
         """returns an indepenedent deepcopy"""
         return TablArray(copy.deepcopy(self.base), self.ts.cdim, self.view)
 
-    def __str__(self):
-        sval = ''
-        sval += '%s' % tdimstr.array2str_plus_tdim(self.base, self.ts.tdim)
-        sval += ' %s' % self.ts
-        return sval
+    __str__ = taprint.tablarray2string
 
     def __repr__(self):
         return self.__str__()
@@ -218,9 +215,14 @@ class TablArray(object):
         return tuple(indices), cdim
 
     def __getitem__(self, indices):
-        indices, cdim = self._process_indx(indices)
-        # once an ATC, always an ATC
-        rarray = self.base.__getitem__(indices)
+        if self.ts.tdim == 0 and self._bcast:
+            # special case for bcast w tdim=0
+            rarray = self.base
+            cdim = 0
+        else:
+            indices, cdim = self._process_indx(indices)
+            # once an ATC, always an ATC
+            rarray = self.base.__getitem__(indices)
         # return TablArray(rarray, cdim, self.view)
         return base._rval_once_a_ta(TablArray, rarray, cdim, self.view)
 
