@@ -20,6 +20,8 @@ Created on Fri May 15 17:40:41 2020
 from . import linalg
 from .np2ta import *
 
+from .version import __version__, __status__
+
 from .assy import *
 from .base import *
 from .cmatmul import *
