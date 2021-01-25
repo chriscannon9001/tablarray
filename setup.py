@@ -29,5 +29,5 @@ setuptools.setup(
     python_requires='>=3.2',
     install_requires=[
         'numpy',
-        'attr'],
+        'attrs'],
     tests_require=['pytest'])
