@@ -216,7 +216,7 @@ Lessons from above:
 
 Installation
 ============
-... coming soon...
+pip install tablarray
 
 Status
 ======

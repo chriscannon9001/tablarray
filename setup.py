@@ -24,7 +24,8 @@ setuptools.setup(
     license = 'BSD',
     url = 'https://github.com/chriscannon9001/tablarray',
     packages=setuptools.find_packages(include=[
-        'tablarray', 'tablarray.kwtools', 'tablarray.linalg']),
+        'tablarray', 'tablarray.kwtools', 'tablarray.linalg',
+        'tablarray.np2ta', 'tablarray.tests']),
     python_requires='>=3.2',
     install_requires=[
         'numpy',
