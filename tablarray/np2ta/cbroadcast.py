@@ -17,26 +17,28 @@ DIMPAD1 = -1    # pad on side 1
 DIMPAD2 = -2    # pad on side 2
 DIMERR = -3     # error, incompatible dimension
 
-_DTYPE_PRIORITY = {np.dtype(np.bool): 0,
-                   np.dtype(np.int8): 2,
-                   np.dtype(np.int16): 3,
-                   np.dtype(np.int32): 4,
-                   np.dtype(np.int64): 5,
-                   np.dtype(np.float16): 6,
-                   np.dtype(np.float32): 7,
-                   np.dtype(np.float64): 8,
-                   np.dtype(np.float128): 9,
-                   np.dtype(np.complex64): 10,
-                   np.dtype(np.complex128): 11,
-                   np.dtype(np.complex256): 12}
+_DTYPE_PRIORITY = {'bool': 0,
+                   'bool8': 1,
+                   'int8': 2,
+                   'int16': 3,
+                   'int32': 4,
+                   'int64': 5,
+                   'float16': 6,
+                   'float32': 7,
+                   'float64': 8,
+                   'float128': 9,
+                   'complex64': 10,
+                   'complex128': 11,
+                   'complex256': 12}
 
 
 def _prioritize_dtype(override, a, b):
-    """"""
+    """when arrays a and b are broadcast,
+    determine dtype of the return array"""
     if override is not None:
         return override
-    a_priority = _DTYPE_PRIORITY[a.dtype]
-    b_priority = _DTYPE_PRIORITY[b.dtype]
+    a_priority = _DTYPE_PRIORITY[a.dtype.__str__()]
+    b_priority = _DTYPE_PRIORITY[b.dtype.__str__()]
     dtype = a.dtype if (a_priority >= b_priority) else b.dtype
     return dtype
 
