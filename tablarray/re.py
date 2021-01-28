@@ -69,3 +69,21 @@ def ravel(a, order='C'):
 
     numel = np.product(a.shape)
     return reshape(a, (numel,), order=order)
+
+def tile(a, reps):
+    if not base.istablarray(a):
+        # just fall back on np.tile if a is not TablArray
+        return np.tile(a, reps)
+
+    if a.view == 'table' or a.view == 'bcast':
+        tl_reps = (*reps, *a.ts.cshape)
+    elif a.view == 'cell':
+        tl_reps = (*a.ts.tshape, *reps)
+    elif a.view == 'array':
+        tl_reps = reps
+    else:
+        raise ValueError('unknown view %s' % a.view)
+
+    rarray = np.tile(a.base, tl_reps)
+    rclass = a.__class__
+    return rclass(rarray, a.ts.cdim, a.view)

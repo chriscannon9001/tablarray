@@ -13,6 +13,9 @@ main_ns = {}
 fname_version = setuptools.convert_path("tablarray/version.py")
 with open(fname_version) as vf:
     exec(vf.read(), main_ns)
+fname_readme = setuptools.convert_path("README.rst")
+with open(fname_readme) as rf:
+    README = rf.read()
 
 setuptools.setup(
     name = 'tablarray',
@@ -21,6 +24,8 @@ setuptools.setup(
     author_email = 'chris.cannon.9001@gmail.com',
     description = 'Extend broadcasting rules of numpy to abstract tabular'
                     'shape of data from cellular shape',
+    long_description=README,
+    long_description_content_type='text/x-rst',
     license = 'BSD',
     url = 'https://github.com/chriscannon9001/tablarray',
     packages=setuptools.find_packages(include=[

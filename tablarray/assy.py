@@ -14,6 +14,7 @@ import numpy as np
 from . import taprint
 from . import base
 from . import ta
+from . import re
 
 
 class Assembly(object):
@@ -161,6 +162,28 @@ class Assembly(object):
         # set all existing values to same view
         for key in self.keys():
             self[key].setview(view)
+
+    def autotile(self, key):
+        """Tile an element so that it matches the maximum table
+        shape of the assembly, much like it appears when printing a bcast
+        view.
+
+        This can be useful e.g. for plotting, while normally bcast view is
+        more efficient (in memory) for writing formulas."""
+        bcast_tshape = self._ts.tshape
+        array = self[key]
+        tshape = array.ts.tshape
+        if bcast_tshape == tshape:
+            # skip the rest
+            return array
+        # determine the number of repetitions along each axis
+        tshape2 = np.ones(self._ts.tdim)
+        tshape2[-array.ts.tdim:] = tshape
+        repsArr = np.array(bcast_tshape)
+        repsArr[np.equal(tshape2, bcast_tshape)] = 1
+        reps = tuple(repsArr)
+        print('bcast tshape', bcast_tshape, 'tshape', tshape, 'reps', reps)
+        return re.tile(array.table, reps)
 
     @property
     def bcast(self):
