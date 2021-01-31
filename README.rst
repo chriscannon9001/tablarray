@@ -48,7 +48,7 @@ Those '|' separate tabular vs cellular structure. Similarly 't(4, 4)|c(2,)' is a
 .. code-block:: python
 
     En = ta.abs(ta.linalg.norm(E)**2)
-    Efield = ta.Assembly(x=x, y=y, E=E, En=En)
+    Efield = ta.TablaSet(x=x, y=y, E=E, En=En)
     Efield['r'] = ta.sqrt(Efield['x']**2 + Efield['y']**2)
     ta.set_printoptions(threshold=10, precision=3)
     print(Efield.table)
@@ -208,10 +208,10 @@ Those '|' separate tabular vs cellular structure. Similarly 't(4, 4)|c(2,)' is a
 
 Lessons from above:
 
-1. TablArray and Assembly objects have bcast, table, and cell views.
+1. TablArray and TablaSet have bcast, table, and cell views.
 2. Broadcasting rules of numpy are extended to recognize tabular and cellular shapes.
 3. This frees physics libraries to write formulas while blind to tabular super-structure of the application. In other words, the goal is to abstract formulas from tabular shape.
-4. Assembly adds to TablArray by enforcing broadcast-ability across datasets. Once an Assembly is built, you know it is ready for formulas.
+4. TablaSet adds to TablArray by enforcing broadcast-ability across datasets. Once a TablaSet is built, you know it is ready for formulas.
 
 
 Installation

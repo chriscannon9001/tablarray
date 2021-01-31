@@ -22,12 +22,12 @@ from .np2ta import *
 
 from .version import __version__, __status__
 
-from .assy import *
 from .base import *
 from .cmatmul import *
 #from .misc import *
 from .mmul import *
 from .re import *
+from .set import *
 from .ta import *
 from .taprint import *
 from .views import *

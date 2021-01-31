@@ -13,7 +13,7 @@ def istablarray(obj):
     return hasattr(obj, 'ts') and hasattr(obj, 'view')
 
 
-def isassembly(a):
+def istablaset(a):
     return (hasattr(a, '_tablarrays') and hasattr(a, '_ts')
             and hasattr(a, 'keys'))
 

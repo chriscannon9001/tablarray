@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Print options and print functions for TablArray and Assembly
+Print options and print functions for TablArray and TablaSet
 
 Created on Sat Jan 23 10:21:06 2021
 
@@ -65,7 +65,7 @@ def set_printoptions(threshold=None, linewidth=None, precision=None,
         'trailing' (default) places shape at end of last line.
         'nextline' inserts a carriage return between last line of array and
         tablarray shape. 'ignore' does not display the shape. Note that
-        assembly2string forces 'ignore'.
+        tablaset2string forces 'ignore'.
     """
     options = _check_options_2dict(threshold, linewidth, precision,
                                    tashapestyle)
@@ -371,31 +371,31 @@ def _mangle_table_get(obj, index):
         return None
 
 
-def assembly2string(assy, elmnt_size=None, elmnt_shape=None, threshold=None,
+def tablaset2string(set, elmnt_size=None, elmnt_shape=None, threshold=None,
                     linewidth=None, precision=None, tashapestyle=None):
     """
-    Print assembly (dict of arrays or Assembly) to string using flat indices
+    Print assembly (dict of arrays or TablaSet) to string using flat indices
 
     Parameters
     ----------
-        assy: dict of arrays or Assembly
-            data in the form of a dict of arrays or tablarray.Assembly
-        elmnt_size: int (leave as None if assy is Assembly)
+        set: dict of arrays or TablaSet
+            data in the form of a dict of arrays or tablarray.TablaSet
+        elmnt_size: int (leave as None if set is TablaSet)
             size of the arrays
-        elmnt_shape: tuple (leave as None if assy is Assembly)
+        elmnt_shape: tuple (leave as None if set is TablaSet)
             shape of the arrays
             max linewidth
         see set_printoptions
     """
     # check required inputs
-    if base.isassembly(assy):
-        elmnt_size = assy._size if elmnt_size is None else elmnt_size
-        elmnt_shape = assy._shape if elmnt_shape is None else elmnt_shape
+    if base.istablaset(set):
+        elmnt_size = set._size if elmnt_size is None else elmnt_size
+        elmnt_shape = set._shape if elmnt_shape is None else elmnt_shape
     else:
-        # maybe add check on assy type if not Assembly
+        # maybe add check on set type if not TablaSet
         pass
     if elmnt_size is None or elmnt_shape is None:
-        raise ValueError('size and shape required for non-Assembly types')
+        raise ValueError('size and shape required for non-TablaSet types')
 
     # get options
     overrides = _check_options_2dict(
@@ -405,7 +405,7 @@ def assembly2string(assy, elmnt_size=None, elmnt_shape=None, threshold=None,
     options.update(overrides)
 
     # 'header' just means list of keys
-    header = list(assy.keys())
+    header = list(set.keys())
     # assemble a list of array indices
     indices = []
     def pack_indices(iarray):
@@ -437,7 +437,7 @@ def assembly2string(assy, elmnt_size=None, elmnt_shape=None, threshold=None,
             if index is None:
                 row.append('...')
             else:
-                array = assy[key]
+                array = set[key]
                 val = _mangle_table_get(array, index)
                 # print(key, index2)
                 # try:
