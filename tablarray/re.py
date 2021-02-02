@@ -10,7 +10,7 @@ Created on Wed Jan  6 23:53:54 2021
 
 import numpy as np
 
-from . import base
+from . import misc
 
 
 def reshape(a, newshape, order='C'):
@@ -28,7 +28,7 @@ def reshape(a, newshape, order='C'):
     order: {'C', 'F', 'A'}, optional
         See numpy.reshape
     """
-    if not base.istablarray(a):
+    if not misc.istablarray(a):
         # just fall back on np.reshape if a is not TablArray
         return np.reshape(a, newshape, order=order)
 
@@ -63,7 +63,7 @@ def ravel(a, order='C'):
     order: {'C', 'F', 'A'}, optional
         See numpy.ravel
     """
-    if not base.istablarray(a):
+    if not misc.istablarray(a):
         # just fall back on np.ravel if a is not TablArray
         return np.ravel(a, order=order)
 
@@ -71,7 +71,7 @@ def ravel(a, order='C'):
     return reshape(a, (numel,), order=order)
 
 def tile(a, reps):
-    if not base.istablarray(a):
+    if not misc.istablarray(a):
         # just fall back on np.tile if a is not TablArray
         return np.tile(a, reps)
 

@@ -22,9 +22,8 @@ from .np2ta import *
 
 from .version import __version__, __status__
 
-from .base import *
 from .cmatmul import *
-#from .misc import *
+from .misc import *
 from .mmul import *
 from .re import *
 from .set import *

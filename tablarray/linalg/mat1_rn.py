@@ -9,7 +9,7 @@ Created on Sun May 24 16:37:02 2020
 import functools
 import numpy as np
 
-from .. import base
+from .. import misc
 
 
 def _mat1_rN_atc(func, min_cdim, *rv_cdims):
@@ -18,7 +18,7 @@ def _mat1_rN_atc(func, min_cdim, *rv_cdims):
 
     @functools.wraps(func)
     def wrapped_mat1_rN_atc(a, *args, **kwargs):
-        if base.istablarray(a):
+        if misc.istablarray(a):
             if (a.ts.cdim < min_cdim):
                 raise np.linalg.LinAlgError(
                         '%d-dimensional array given.' % a.ts.cdim
@@ -31,7 +31,7 @@ def _mat1_rN_atc(func, min_cdim, *rv_cdims):
             for i in range(N_rval):
                 # print(rv_cdims[i])
                 # rval2[i] = rclass(rvals[i], rv_cdims[i], view=a.view)
-                rval2[i] = base._rval_once_a_ta(
+                rval2[i] = misc._rval_once_a_ta(
                     rclass, rvals[i], rv_cdims[i], a.view)
             return tuple(rval2)
         else:

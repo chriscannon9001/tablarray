@@ -11,7 +11,7 @@ Created on Sat Jan 23 10:21:06 2021
 import contextlib
 import numpy as np
 
-from . import base
+from . import misc
 
 _taprint_options = {
     'threshold': 50,  # size > threshold triggers summarization
@@ -75,7 +75,7 @@ def set_printoptions(threshold=None, linewidth=None, precision=None,
 def get_printoptions():
     """
     Return the current string printing options for tablarray.
-    
+
     Returns
     -------
     options: dict
@@ -91,7 +91,7 @@ def get_printoptions():
 def printoptions(*args, **kwargs):
     """
     Context manager for setting string printing options for tablarray.
-    
+
     >>> import numpy as np
     >>> import tablarray as ta
     >>> with ta.printoptions(precision=3, tashapestyle='ignore'):
@@ -101,7 +101,6 @@ def printoptions(*args, **kwargs):
     ... 
     ...  [|[3.14 3.14]|
     ...   |[3.14 3.14]|]]
-        
 
     See set_printoptions for parameters.
     """
@@ -200,7 +199,7 @@ def _int2str(obj, precision=8, **kwargs):
     g_format = '%%0.%dg' % precision
     g = g_format % obj
     # only return the conversion that's actually shorter
-    return d if len(d)<=len(g) else g
+    return d if len(d) <= len(g) else g
 
 
 def _float2str(obj, precision=8, **kwargs):
@@ -241,7 +240,7 @@ def _np2str(obj, precision=None, linewidth=None, threshold=None, **kwargs):
 
 
 def _ta2str(obj, **kwargs):
-    if not base.istablarray(obj):
+    if not misc.istablarray(obj):
         # return None if this function doesn't handle obj
         return None
     return tablarray2string(obj, **kwargs)
@@ -388,7 +387,7 @@ def tablaset2string(set, elmnt_size=None, elmnt_shape=None, threshold=None,
         see set_printoptions
     """
     # check required inputs
-    if base.istablaset(set):
+    if misc.istablaset(set):
         elmnt_size = set._size if elmnt_size is None else elmnt_size
         elmnt_shape = set._shape if elmnt_shape is None else elmnt_shape
     else:
@@ -408,6 +407,7 @@ def tablaset2string(set, elmnt_size=None, elmnt_shape=None, threshold=None,
     header = list(set.keys())
     # assemble a list of array indices
     indices = []
+
     def pack_indices(iarray):
         for i in iarray:
             indices.append(np.unravel_index(i, elmnt_shape))

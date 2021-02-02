@@ -19,7 +19,7 @@ from . import re
 from . import tashape
 #from . import tdimstr
 from . import taprint
-from . import base
+from . import misc
 
 LOG = logging.getLogger(__name__)
 
@@ -71,7 +71,7 @@ class TablArray(object):
         # ensure type of self.base
         if isinstance(a, np.ndarray):
             self.base = a          # based on ndarray
-        elif base.istablarray(a):
+        elif misc.istablarray(a):
             self.base = a.base    # based on ATC type
             cdim = a.ts
         else:
@@ -224,7 +224,7 @@ class TablArray(object):
             # once an ATC, always an ATC
             rarray = self.base.__getitem__(indices)
         # return TablArray(rarray, cdim, self.view)
-        return base._rval_once_a_ta(TablArray, rarray, cdim, self.view)
+        return misc._rval_once_a_ta(TablArray, rarray, cdim, self.view)
 
     def __setitem__(self, indices, val):
         if isinstance(val, TablArray):

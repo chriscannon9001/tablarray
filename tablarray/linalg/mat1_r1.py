@@ -9,21 +9,21 @@ Created on Sun May 24 14:07:30 2020
 import functools
 import numpy as np
 
-from .. import base
+from .. import misc
 
 
 def _mat1_r1_atc(func, min_cdim, rval_cdim):
     """ATC-wrap for numpy.linalg of the form func(array)->array-like"""
     @functools.wraps(func)
     def wrapped_mat1_r1_atc(a, *args, **kwargs):
-        if base.istablarray(a):
+        if misc.istablarray(a):
             if (a.ts.cdim < min_cdim):
                 raise np.linalg.LinAlgError(
                         '%d-dimensional array given.' % a.ts.cdim
                         + 'Array must be at least %d-dimensional' % min_cdim)
             rarray = func(a.cell, *args, **kwargs)
             rclass = a.__class__
-            return base._rval_once_a_ta(rclass, rarray, rval_cdim, a.view)
+            return misc._rval_once_a_ta(rclass, rarray, rval_cdim, a.view)
             # return rclass(rarray, rval_cdim, view=a.view)
         else:
             return func(a, *args, **kwargs)

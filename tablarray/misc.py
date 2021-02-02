@@ -9,13 +9,21 @@ Created on Sun Jan  3 15:34:31 2021
 """
 
 
-def istablarray(obj):
-    return hasattr(obj, 'ts') and hasattr(obj, 'view')
+def istablarray(a):
+    """returns True/False if argument appears to fulfill TablArray class"""
+    return (hasattr(a, 'ts') and hasattr(a, 'view')
+            and hasattr(a, 'base') and hasattr(a, 'bcast'))
 
 
 def istablaset(a):
+    """returns True/False if argument appears to fulfill TablaSet class"""
     return (hasattr(a, '_tablarrays') and hasattr(a, '_ts')
-            and hasattr(a, 'keys'))
+            and hasattr(a, 'keys') and hasattr(a, 'bcast'))
+
+
+def base(a):
+    """returns .base if argument is tablarray else pass-through a"""
+    return a.base if istablarray(a) else a
 
 
 def _rval_once_a_ta(rclass, rval, cdim, view):

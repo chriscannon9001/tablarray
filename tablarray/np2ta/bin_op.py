@@ -12,7 +12,7 @@ Created on Sun May 17 18:17:59 2020
 import functools
 import numpy as np
 
-from .. import base
+from .. import misc
 
 
 def _cast_other_type(other, TablArray):
@@ -28,18 +28,19 @@ def _cast_other_type(other, TablArray):
     return other
 
 
-def _binary_broadcast(func):
+def _binary_broadcast(func, dtype=None):
     """broadcasting for binary operands - TablArray, np.ndarray, or scalar"""
     @functools.wraps(func)
     def wrap_bin_bcast(a, b, *args, **kwargs):
         """depending on the types of a and b, find a suitable broadcasting"""
-        if base.istablarray(a) and base.istablarray(b):
+        if misc.istablarray(a) and misc.istablarray(b):
             # if both are TablArray, then use tablarray broadcasting
             cdim, bc = a.ts.combine(b.ts)
-            rarray = bc.calc_function(func, a.base, b.base, *args, **kwargs)
+            rarray = bc.calc_function(func, a.base, b.base, *args,
+                                      dtype=dtype, **kwargs)
             rclass = a.__class__
             view = a.view
-        elif base.istablarray(a):
+        elif misc.istablarray(a):
             b = _cast_other_type(b, a)
             # if only one is TablArray, then use numpy array broadcast
             rarray = func(a.base, b, *args, **kwargs)
@@ -47,7 +48,7 @@ def _binary_broadcast(func):
             # assume the result has the same cdim as a.ts.cdim
             cdim = a.ts.cdim
             view = a.view
-        elif base.istablarray(b):
+        elif misc.istablarray(b):
             a = _cast_other_type(a, b)
             rarray = func(a, b.base, *args, **kwargs)
             rclass = b.__class__
@@ -57,7 +58,7 @@ def _binary_broadcast(func):
             # if neither operand is TablArray, just fall back on numpy
             return func(a, b, *args, **kwargs)
         # once a TablArray, always a TablArray
-        return base._rval_once_a_ta(rclass, rarray, cdim, view)
+        return misc._rval_once_a_ta(rclass, rarray, cdim, view)
     return wrap_bin_bcast
 
 
@@ -70,17 +71,17 @@ multiply = _binary_broadcast(np.multiply)
 power = _binary_broadcast(np.power)
 true_divide = _binary_broadcast(np.true_divide)
 divmod = _binary_broadcast(np.divmod)
-equal = _binary_broadcast(np.equal)
-greater_equal = _binary_broadcast(np.greater_equal)
-greater = _binary_broadcast(np.greater)
-less_equal = _binary_broadcast(np.less_equal)
-less = _binary_broadcast(np.less)
+equal = _binary_broadcast(np.equal, dtype=bool)
+greater_equal = _binary_broadcast(np.greater_equal, dtype=bool)
+greater = _binary_broadcast(np.greater, dtype=bool)
+less_equal = _binary_broadcast(np.less_equal, dtype=bool)
+less = _binary_broadcast(np.less, dtype=bool)
 logical_and = _binary_broadcast(np.logical_and)
 logical_or = _binary_broadcast(np.logical_or)
 logical_xor = _binary_broadcast(np.logical_xor)
 
 # these are only available here - not as methods
-allclose = _binary_broadcast(np.allclose)
+allclose = _binary_broadcast(np.allclose, dtype=bool)
 arctan2 = _binary_broadcast(np.arctan2)
 bitwise_and = _binary_broadcast(np.bitwise_and)
 bitwise_or = _binary_broadcast(np.bitwise_or)
@@ -95,7 +96,7 @@ fmod = _binary_broadcast(np.fmod)
 gcd = _binary_broadcast(np.gcd)
 heaviside = _binary_broadcast(np.heaviside)
 hypot = _binary_broadcast(np.hypot)
-isclose = _binary_broadcast(np.isclose)
+isclose = _binary_broadcast(np.isclose, dtype=bool)
 lcm = _binary_broadcast(np.lcm)
 ldexp = _binary_broadcast(np.ldexp)
 left_shift = _binary_broadcast(np.left_shift)
@@ -105,6 +106,6 @@ maximum = _binary_broadcast(np.maximum)
 minimum = _binary_broadcast(np.minimum)
 mod = _binary_broadcast(np.remainder)
 nextafter = _binary_broadcast(np.nextafter)
-not_equal = _binary_broadcast(np.not_equal)
+not_equal = _binary_broadcast(np.not_equal, dtype=bool)
 remainder = _binary_broadcast(np.remainder)
 right_shift = _binary_broadcast(np.right_shift)
