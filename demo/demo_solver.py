@@ -13,7 +13,27 @@ import tablarray as ta
 
 
 # demo writing physics lib code with added TablaSet intel
-@ta.solver_spec('qvect_decompose(qvect, v){cell} --> (w, curv){table}')
+@ta.solver_spec('cumabcd(abcd){table} --> (cumabcd)')
+def cumabcd(abcd):
+    """given ABCD, accumulate cumabcd"""
+    return ta.cummatmul(abcd, axis=0)
+
+
+@ta.solver_spec('qvect0(cumabcd){bcast} --> (qvect0){table}')
+def qvect0(cumabcd):
+    """given cumabcd, return qvect0"""
+    _, eig_vect = ta.linalg.eig(cumabcd[-1])
+    qvect0 = eig_vect.cell[:, 1]
+    return qvect0
+
+
+@ta.solver_spec('qvect(cumabcd, qvect0){table} --> (qvect)')
+def qvect(cumabcd, qvect0):
+    return ta.matmul(cumabcd, qvect0)
+
+
+@ta.solver_spec(inargs=['qvect', 'v'], inkwargs=[], outargs=['w', 'curv'],
+                inview='cell')
 def qvect_decompose(qvect, v):
     """Given q return w, curv=1/R
     {where 1/q = 1/R - j * lambda / (pi*w^2)}"""
@@ -21,6 +41,13 @@ def qvect_decompose(qvect, v):
     w = ta.sqrt((10/(np.pi*v)) * (-1/ta.imag(1/q_scalar)))
     curv = ta.real(1/q_scalar)
     return w, curv
+
+
+@ta.solver_spec(inargs=['abcd'], inkwargs=[], outargs=['opl'])
+def opl(abcd):
+    opl_i = abcd.cell[0, 1]
+    opl = ta.cumsum(opl_i.table, axis=0).cell
+    return opl
 
 
 # this is a paraxial round trip through a resonator
@@ -37,22 +64,13 @@ abcd = ta.TablArray([[[[1, 0], [-2/100, 1]]],  # curved end mirror
                      [[[1, 4], [0, 1]]],  # laser crystal
                      [[[1, 10], [0, 1]]]], cdim=2)  # air
 
-set1 = ta.TablaSet(abcd=abcd)
+set1 = ta.TablaSet(abcd=abcd, v=1e4/1.06)
 
-# cumulative abcd matrix
-set1['cumabcd'] = ta.cummatmul(set1['abcd'], axis=0)
-# get the last cumulative abcd matrix, then solve the eigens
-eig_val, eig_vect = ta.linalg.eig(set1['cumabcd'].bcast[-1, :])
-# pick one of the eigenvectors (the first one)
-set1['qvect0'] = eig_vect.cell[:, 1]
-set1['qvect'] = ta.matmul(set1['cumabcd'], set1['qvect0'])
-set1['w'], set1['curv'] = qvect_decompose(set1, v=10000/1.064)
-
-opl_i = set1['abcd'].cell[0, 1]
-set1['opl'] = ta.cumsum(opl_i.table, axis=0).cell
+solve1 = ta.TablaSolver(set1, [cumabcd, qvect0, qvect, qvect_decompose, opl])
+'''solve1(maxiter=2)
 
 plt.plot(set1['opl', :, 0].base, set1['w', :, 0].base)
 plt.xlabel('OPL (mm)')
 plt.ylabel('w_00 (mm)')
 with ta.printoptions(precision=3, threshold=10):
-    print(set1)
+    print(set1)'''

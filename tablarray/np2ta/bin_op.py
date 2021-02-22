@@ -81,7 +81,7 @@ logical_or = _binary_broadcast(np.logical_or)
 logical_xor = _binary_broadcast(np.logical_xor)
 
 # these are only available here - not as methods
-allclose = _binary_broadcast(np.allclose, dtype=bool)
+# allclose = _binary_broadcast(np.allclose, dtype=bool)
 arctan2 = _binary_broadcast(np.arctan2)
 bitwise_and = _binary_broadcast(np.bitwise_and)
 bitwise_or = _binary_broadcast(np.bitwise_or)

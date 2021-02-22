@@ -7,8 +7,6 @@ Created on Sun May 10 15:44:05 2020
 """
 
 import collections
-import functools
-import logging
 import numpy as np
 
 # internal imports
@@ -149,6 +147,10 @@ class TablaSet(object):
     def __contains__(self, key):
         return self._tablarrays.__contains__(key)
 
+    def update(self, **kwargs):
+        for key, val in kwargs.items():
+            self[key] = val
+
     __str__ = taprint.tablaset2string
 
     def __view__(self, view):
@@ -221,127 +223,3 @@ def _survey_view(args, kwargs):
     print('counts %s' % counts)
     popular_idx = np.argsort(counts)[-1]
     return views[popular_idx]
-
-
-def tablaset_args(setargs=(), setkwargs=(), argview='cell',
-                  rvalview='ignore', debugging=False):
-    """
-    Decorator tablaset_args
-    =======================
-    Give clients of your func the option of covering args using a TablaSet.
-
-    Also handles pass-through to original func(*args, **kwargs)
-
-    Parameters
-    ----------
-    setargs: tuple of str ('arg1', 'arg2', ...)
-        Names of elements that can be taken from a TablaSet and passed
-        as *args in this order.
-    setkwargs: tuple of str ('karg1', 'kwarg2', ...)
-        Names of elements that can be taken from a TablaSet and passed
-        as **kwargs.
-    [argview]: str 'ignore', 'cell' (default), 'table', 'bcast', or 'array'
-        TablArray or TablaSet inputs will be cast to this view. See TablArray
-    [rvalview]: str 'preserve', 'ignore' (default), 'cell', 'table', 'bcast',
-        or 'array'
-        Return values can be set to a view
-    [debugging]: bool (default False)
-        Activate logging.debug messages
-    """
-    if len(setargs) < 1 and len(setkwargs) < 1:
-        raise ValueError('need to spec args or kwargs')
-    for arg in setargs:
-        if type(arg) is not str:
-            raise TypeError('got type %s instead of str' % type(arg))
-    for arg in setkwargs:
-        if type(arg) is not str:
-            raise TypeError('got type %s instead of str' % type(arg))
-    if argview not in ['ignore', 'cell', 'table', 'bcast', 'array']:
-        raise ValueError('unrecognized argview "%s"' % argview)
-    if rvalview not in ['preserve', 'ignore', 'cell', 'table', 'bcast',
-                        'array']:
-        raise ValueError('unrecognized argview "%s"' % argview)
-
-    def _viewargs(args):
-        """for each TablArray in args, force using the expected argview"""
-        if argview == 'ignore':
-            return args
-        args2 = []
-        for arg in args:
-            arg2 = arg.__view__(argview) if misc.istablarray(arg) else arg
-            args2.append(arg2)
-        return tuple(args2)
-
-    def _viewkwargs(kwargs):
-        """for each TablArray in kwargs, force using the expected argview"""
-        if argview == 'ignore':
-            return kwargs
-        kwargs2 = {}
-        for key, item in kwargs.items():
-            item2 = item.__view__(argview) if misc.istablarray(item) else item
-            kwargs2[key] = item2
-        return kwargs2
-
-    def args_assembler_decorator(func):
-        if debugging:
-            log = logging.getLogger(__name__ + ': ' + func.__name__)
-
-        @functools.wraps(func)
-        def args_assembler_wrapper(*args, **kwargs):
-            if misc.istablaset(args[0]):
-                if debugging:
-                    log.debug('client gave a TablaSet to load args')
-                    if len(args) > 1:
-                        log.warning('ignoring %d args from client',
-                                    len(args[1:]))
-                set1 = args[0]
-                keys = set1.keys()
-                # get args1 from set1
-                args1 = []
-                for setarg in setargs:
-                    if setarg in keys:
-                        args1.append(set1[setarg])
-                    elif debugging:
-                        log.debug('element "%s" not found in TablaSet',
-                                  setarg)
-                # get kwargs1 from set1
-                kwargs1 = {}
-                for setkwarg in setkwargs:
-                    if setkwarg in keys:
-                        kwargs1[setkwarg] = set1[setkwarg]
-                    elif debugging:
-                        log.debug('element "%s" not found in TablaSet',
-                                  setkwarg)
-                # combine kwargs from the line
-                if debugging and len(kwargs) > 0:
-                    log.debug('combining keywords %s from client',
-                              list(kwargs.keys()))
-                kwargs1.update(kwargs)
-            else:
-                if debugging:
-                    log.debug("fall back on func(*args, **kwargs)")
-                args1 = args
-                kwargs1 = kwargs
-            # finished mangling args and kwargs, now call func
-            rvals = func(*_viewargs(args1), **_viewkwargs(kwargs1))
-            if rvalview == 'ignore':
-                if debugging:
-                    log.debug('ignoring rval views')
-                return rvals
-            # the view of all TablArray returns will be by survey or constant
-            rview = (_survey_view(args1, kwargs1) if rvalview == 'preserve'
-                     else rvalview)
-            if debugging:
-                log.debug('set all views to "%s"', rview)
-            # find TablArray returns and force the view
-            rvals = [rvals] if type(rvals) is not tuple else rvals
-            rvals2 = []
-            for rval in rvals:
-                rval2 = (rval.__view__(rview) if misc.istablarray(rval)
-                         else rval)
-                if debugging:
-                    log.debug('.view %s to %s', rval.view, rval2.view)
-                rvals2.append(rval2)
-            return rvals[0] if len(rvals) == 1 else tuple(rvals)
-        return args_assembler_wrapper
-    return args_assembler_decorator

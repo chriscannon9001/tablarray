@@ -27,6 +27,7 @@ from .misc import *
 from .mmul import *
 from .re import *
 from .set import *
+from .solve import *
 from .ta import *
 from .taprint import *
 from .views import *
