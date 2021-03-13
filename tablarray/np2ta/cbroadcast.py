@@ -32,14 +32,14 @@ _DTYPE_PRIORITY = {'bool': 0,
                    'complex256': 12}
 
 
-def _prioritize_dtype(override, a, b):
+def _prioritize_dtype(override, atype, btype):
     """when arrays a and b are broadcast,
     determine dtype of the return array"""
     if override is not None:
         return override
-    a_priority = _DTYPE_PRIORITY[a.dtype.__str__()]
-    b_priority = _DTYPE_PRIORITY[b.dtype.__str__()]
-    dtype = a.dtype if (a_priority >= b_priority) else b.dtype
+    a_priority = _DTYPE_PRIORITY[atype.__str__()]
+    b_priority = _DTYPE_PRIORITY[btype.__str__()]
+    dtype = atype if (a_priority >= b_priority) else btype
     return dtype
 
 
@@ -179,7 +179,7 @@ class CellBroadcast(object):
         assert self.valid, (
                 "couldn't broadcast compound shapes %s and %s" %
                 (a.ts, b.ts))
-        dtype = _prioritize_dtype(dtype, a, b)
+        dtype = _prioritize_dtype(dtype, a.dtype, b.dtype)
         rval = np.zeros(self.new_shape, dtype=dtype)
         for rslice, aslice, bslice in self:
             rval[rslice] = func(a[aslice], b[bslice])

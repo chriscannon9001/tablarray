@@ -206,6 +206,39 @@ class TablaSet(object):
     def array(self):
         return self.__view__('array')
 
+    def axis_of(self, key):
+        """
+        return the axis number that appear to solely index for key
+
+        The answer is always relative to the tabular tdim of the set, i.e.
+        the full shape after broadcasting.
+
+        Parameters
+        ----------
+        key : str
+            element of set
+
+        Returns
+        -------
+        axis : int or None
+            Axis number, or None if key changes along more than one axis.
+        """
+        array = self[key].table
+
+        axes = []
+        slice0 = [0] * array.ts.tdim
+        for i in range(array.ts.tdim):
+            if array.ts.tshape[i] > 1:
+                slice1 = slice0[: i] + [1] + slice0[i + 1:]
+                d_array = (array.__getitem__(tuple(slice1))
+                           - array.__getitem__(tuple(slice0)))
+                if not np.all(np.isclose(d_array, 0)):
+                    axes.append(i)
+        if len(axes) != 1:
+            return None
+        # adjust, if this array has tdim shorter than the broadcast shape
+        return axes[0] + (self._ts.tdim - array.ts.tdim)
+
 
 def _survey_view(args, kwargs):
     """find the most popular view of TablArrays in args and kwargs"""

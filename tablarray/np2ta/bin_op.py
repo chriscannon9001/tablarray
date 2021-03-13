@@ -23,7 +23,7 @@ def _cast_other_type(other, TablArray):
     other = np.array(other) if (o_type is list or o_type is tuple) else other
     if TablArray._tabular and not np.isscalar(other):
         # if my view is tabular I need to promote to tabular shape
-        o_shape2 = tuple(list(TablArray.shape) + [1] * TablArray.ts.cdim)
+        o_shape2 = tuple(list(other.shape) + [1] * TablArray.ts.cdim)
         other = other.reshape(o_shape2)
     return other
 
@@ -59,6 +59,9 @@ def _binary_broadcast(func, dtype=None):
             return func(a, b, *args, **kwargs)
         # once a TablArray, always a TablArray
         return misc._rval_once_a_ta(rclass, rarray, cdim, view)
+    wrap_bin_bcast.__doc__ = (
+        "**TablArray compatible** %s\n\n" % func.__name__
+        + wrap_bin_bcast.__doc__)
     return wrap_bin_bcast
 
 

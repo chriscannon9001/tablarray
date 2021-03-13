@@ -67,10 +67,10 @@ abcd = ta.TablArray([[[[1, 0], [-2/100, 1]]],  # curved end mirror
 set1 = ta.TablaSet(abcd=abcd, v=1e4/1.06)
 
 solve1 = ta.TablaSolver(set1, [cumabcd, qvect0, qvect, qvect_decompose, opl])
-'''solve1(maxiter=2)
+solve1(maxiter=2)
 
 plt.plot(set1['opl', :, 0].base, set1['w', :, 0].base)
 plt.xlabel('OPL (mm)')
 plt.ylabel('w_00 (mm)')
 with ta.printoptions(precision=3, threshold=10):
-    print(set1)'''
+    print(set1)

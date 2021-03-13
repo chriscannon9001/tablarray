@@ -17,6 +17,11 @@ def reshape(a, newshape, order='C'):
     """Gives a new shape to a TablArray (or array) without changing its data.
     If possible, return a view not a copy
 
+    TablArray reshaping will occur along the current view::
+
+        reshape(a.cell, (2, 2))     # (2, 2) is the new cellular shape
+        reshape(a.table, (5, 1))    # (5, 1) is the new tabular shape
+
     Parameters
     ----------
     a: tablarray_like
@@ -55,6 +60,12 @@ def reshape(a, newshape, order='C'):
 def ravel(a, order='C'):
     """Return a flattened array, returning a view not a copy
 
+    TablArray will ravel along the current view::
+
+        ravel(a.cell)     # ravels all the cells
+        ravel(a.table)    # ravels the table
+        ravel(a.array)    # ravels it all
+
     Parameters
     ----------
     a: tablarray_like
@@ -70,7 +81,27 @@ def ravel(a, order='C'):
     numel = np.product(a.shape)
     return reshape(a, (numel,), order=order)
 
+
 def tile(a, reps):
+    """
+    Cunstruct a larger TablArray by repeating a.
+
+    TablArray will tile along the current view::
+
+        tile(a.cell, (2, 1))    # tile all cells by (2, 1)x
+        tile(a.table, (3))      # tile the table by (3)x
+
+    Parameters
+    ----------
+    a : TablArray or array-like
+        the input array
+    reps : tuple
+        the number of repetitions of a along each axis
+
+    Returns
+    -------
+    c : TablArray or ndarray
+    """
     if not misc.istablarray(a):
         # just fall back on np.tile if a is not TablArray
         return np.tile(a, reps)

@@ -28,6 +28,7 @@ from .mmul import *
 from .re import *
 from .set import *
 from .solve import *
+from .stack import *
 from .ta import *
 from .taprint import *
 from .views import *

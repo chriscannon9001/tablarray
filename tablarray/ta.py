@@ -17,11 +17,20 @@ from .np2ta import el_op
 from .np2ta.op12swap import op12_swap
 from . import re
 from . import tashape
-#from . import tdimstr
 from . import taprint
 from . import misc
 
 LOG = logging.getLogger(__name__)
+
+
+def _get_cdim(a):
+    """recursively determine cdim
+
+    given a list [of list ...] of array-like
+    """
+    if type(a) is not list:
+        return np.ndim(a)
+    return _get_cdim(a[0])
 
 
 class TablArray(object):
@@ -67,6 +76,7 @@ class TablArray(object):
         cellular dim; normally 0 - scalar, 1 - vector, 2 - matrix
         or taShapes type
     """
+
     def __init__(self, a, cdim, view='table'):
         # ensure type of self.base
         if isinstance(a, np.ndarray):
@@ -93,6 +103,20 @@ class TablArray(object):
         cdim = 0 if np.isscalar(cell) else cell.ndim
         shape2 = tuple([1] * cdim)
         a = np.tile(cell, (*tshape, *shape2))
+        return cls(a, cdim, view)
+
+    @classmethod
+    def from_listarray(cls, listarray, view='table'):
+        """
+        create a TablArray from a listarray
+
+        Parameters
+        ----------
+        listarray : list (of list...) of array-like
+            cdim will be inferred from the dim of the array-like object
+        """
+        cdim = _get_cdim(listarray)
+        a = np.array(listarray)
         return cls(a, cdim, view)
 
     def __view__(self, view):
