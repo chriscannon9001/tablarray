@@ -17,6 +17,44 @@ from . import ta
 from . import re
 
 
+def _recursive_loader1(lld):
+    """given a list of [list of] dict"""
+    def _inner_recursive_loader1(key, sub_dataset, sub_lld):
+        n = len(sub_lld)
+        sub_sub_dataset = []
+        for a in range(n):
+            sub_sub_lld = sub_lld[a]
+            if type(sub_sub_lld) is list:
+                _inner_recursive_loader1(key, sub_sub_dataset, sub_sub_lld)
+            else:
+                sub_sub_dataset.append(sub_sub_lld[key])
+        sub_dataset.append(sub_sub_dataset)
+
+    dataset = {}
+    keys = misc._get_1st_obj(lld).keys()
+    for key in keys:
+        dataset[key] = []
+        _inner_recursive_loader1(key, dataset[key], lld)
+    return dataset
+
+
+def _recursive_loader2(dataset, lld):
+    keys = dataset.keys()
+
+    def _inner_recursive_loader(sub_lld, *indices):
+        n = len(sub_lld)
+        for a in range(n):
+            sub_sub_lld = sub_lld[a]
+            if type(sub_sub_lld) is list:
+                _inner_recursive_loader(sub_sub_lld, *indices, a)
+            else:
+                for key in keys:
+                    dataset[key].__setitem__((*indices, a),
+                                             sub_sub_lld[key])
+
+    _inner_recursive_loader(lld)
+
+
 class TablaSet(object):
     """
     TablaSet
@@ -65,6 +103,58 @@ class TablaSet(object):
         self.setview(view)
         for key, val in kwargs.items():
             self[key] = val
+
+    @classmethod
+    def from_layered(cls, lld, blank=None, dtype=None):
+        """
+        Create TablaSet from a 'layered' structure:
+            list [of list] of dict of array-like. Where tabular structure is
+            implied from the outer list [of list] structure.
+
+        Parameters
+        ----------
+            lld : list [of list] of dict of array-like
+                'layered' input. Note that cdim of TablArrays will be implied
+                by the depth of whatever is in dicts
+            blank : [default is None] e.g. nan, 0 or 0.0
+                Providing a default value for blanks signals that lld might
+                have ragged tabular structure. Before creating TablArrays,
+                ragged arrays will be padded with this blank value.
+                Tabular structure is allowed to be ragged, but cellular
+                structure must not be ragged!
+            dtype : [default is None] e.g. int, float, bool
+                If dtype is None and blank is provided, dtype will be inferred
+                from blank. Specify dtype to force the issue.
+
+        Returns
+        -------
+            dataset : TablaSet
+                'unlayered' and cast to TablaSet type
+        """
+        if type(lld) is not list:
+            raise TypeError('lld is not list')
+        obj0 = misc._get_1st_obj(lld)
+        if type(obj0) is not dict:
+            raise TypeError('lld[0]..[0] is not dict')
+        keys = obj0.keys()
+        cshapes = {}
+        for key, val in obj0.items():
+            cshapes[key] = np.array(val).shape
+        dataset = cls()
+        if blank is None:
+            tshape = misc._imply_shape(lld)
+            unlayered = _recursive_loader1(lld)
+            for key, val in unlayered.items():
+                dataset[key] = ta.TablArray(val, len(cshapes[key]))
+        else:
+            tshape = misc._imply_shape_ragged(lld)
+            for key in keys:
+                array = np.empty((*tshape, *cshapes[key]), dtype=dtype)
+                array[:] = blank
+                print(tshape, cshapes[key])
+                dataset[key] = ta.TablArray(array, len(cshapes[key]))
+            _recursive_loader2(dataset, lld)
+        return dataset
 
     def _set_ts(self, new_ts):
         self._ts = new_ts

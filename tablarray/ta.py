@@ -23,14 +23,18 @@ from . import misc
 LOG = logging.getLogger(__name__)
 
 
-def _get_cdim(a):
-    """recursively determine cdim
+def _ragged_loader(outarray, lla):
+    def _inner_ragged_loader(sub_lla, *indices):
+        n = len(sub_lla)
+        for a in range(n):
+            sub_sub_lla = sub_lla[a]
+            if type(sub_sub_lla) is list:
+                _inner_ragged_loader(sub_sub_lla, *indices, a)
+            else:
+                outarray.__setitem__((*indices, a),
+                                     sub_sub_lla)
 
-    given a list [of list ...] of array-like
-    """
-    if type(a) is not list:
-        return np.ndim(a)
-    return _get_cdim(a[0])
+    _inner_ragged_loader(lla)
 
 
 class TablArray(object):
@@ -106,18 +110,36 @@ class TablArray(object):
         return cls(a, cdim, view)
 
     @classmethod
-    def from_listarray(cls, listarray, view='table'):
+    def from_listarray(cls, lla, blank=None, dtype=None, view='table'):
         """
         create a TablArray from a listarray
 
         Parameters
         ----------
-        listarray : list (of list...) of array-like
+        lla : list (of list...) of array-like
             cdim will be inferred from the dim of the array-like object
+        blank : [default is None] e.g. nan, 0 or 0.0
+            Providing a default value for blanks signals that lld might
+            have ragged tabular structure. Before creating TablArrays,
+            ragged arrays will be padded with this blank value.
+            Tabular structure is allowed to be ragged, but cellular
+            structure must not be ragged!
+        dtype : [default is None] e.g. int, float, bool
+            If dtype is None and blank is provided, dtype will be inferred
+            from blank. Specify dtype to force the issue.
+        view : str
+            'table' 'bcast' 'cell' or 'array'
         """
-        cdim = _get_cdim(listarray)
-        a = np.array(listarray)
-        return cls(a, cdim, view)
+        obj0 = misc._get_1st_obj(lla)
+        cshape = np.shape(obj0)
+        if blank is None:
+            a = np.array(lla)
+        else:
+            tshape = misc._imply_shape_ragged(lla)
+            a = np.empty((*tshape, *cshape), dtype=dtype)
+            a[:] = blank
+            _ragged_loader(a, lla)
+        return cls(a, len(cshape), view)
 
     def __view__(self, view):
         """returns an ATC with a different .setview(view), using
