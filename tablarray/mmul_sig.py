@@ -11,7 +11,7 @@ import numpy as np
 from . import ta
 
 
-def mmul_ta_signature(arg):
+def mmul_ta_signature(arg, mxdim):
     """Given a TablArray or np.ndarray, return a TablArray"""
     if hasattr(arg, 'ts') and hasattr(arg, 'base'):
         # arg is TablArray type
@@ -23,10 +23,10 @@ def mmul_ta_signature(arg):
     #        array = arg[0]
     elif isinstance(arg, np.ndarray):
         # assume either cdim = 2 or ndim
-        cdim = max(2, arg.ndim)
-        array = ta.TablArraylib.TablArray(arg, cdim)
+        cdim = max(mxdim, arg.ndim)
+        array = ta.TablArray(arg, cdim)
     elif np.isscalar(arg):
         array = ta.TablArray(np.array(arg), 0)
     else:
-        raise ValueError
+        raise ValueError('matmul can only work on TablArray-like args')
     return array

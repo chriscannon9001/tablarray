@@ -19,6 +19,7 @@ from . import re
 from . import tashape
 from . import taprint
 from . import misc
+from . import mmul
 
 LOG = logging.getLogger(__name__)
 
@@ -301,6 +302,9 @@ class TablArray(object):
     __and__ = bin_op.logical_and
     __or__ = bin_op.logical_or
     __xor__ = bin_op.logical_xor
+
+    # matmul
+    __matmul__ = mmul.matmul
 
     # ax_op has numpy unial operators (axis->scalar), plus an ATC-wrap
     all = ax_op.all

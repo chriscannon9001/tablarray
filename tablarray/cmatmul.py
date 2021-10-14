@@ -16,7 +16,7 @@ def cummatmul(a, axis):
     """Given an ATC object, return the cumulative matmul
     (matrix multiplication) of the cells along the given tabular axis
     Always implies cumulative axis is one of ts.tshape."""
-    a = mmul_ta_signature(a)
+    a = mmul_ta_signature(a, mxdim=2)
     # get a blank ATC for the result
     rarray = np.zeros(a.base.shape, dtype=a.base.dtype)
     rclass = a.__class__

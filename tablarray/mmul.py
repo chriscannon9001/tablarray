@@ -50,16 +50,22 @@ def _matmul_MM(a, b):
 
 
 def matmul(a, b):
-    """Fast Matrix Multiplication with ATC compatibility.
+    """Fast matrix multiplication with TablArray compatibility.
 
     Signatures::
 
-        c = atc_matmul(a: ATC, b: ATC)
-        c = atc_matmul(a: ndarray, b: ndarray)
-        c = atc_matmul(a: ndarray, b: ATC)
+        c = matmul(a: TablArray, b: TablArray)
+        c = matmul(a: ndarray, b: ndarray)
+        c = matmul(a: ndarray, b: TablArray)
+
+    Where allowed cdim are::
+
+        (a: 1d, b: 1d)  # vector dot product
+        (a: 2d, b: 1d)  # multiply matrix by vector
+        (a: 2d, b: 2d)  # multiply matrix by matrix
     """
-    a = mmul_ta_signature(a)
-    b = mmul_ta_signature(b)
+    a = mmul_ta_signature(a, mxdim=2)
+    b = mmul_ta_signature(b, mxdim=2)
     rclass = a.__class__
     # setup the subscripts to achieve matmul
     if a.ts.cdim == 2 and b.ts.cdim == 1:
@@ -71,4 +77,19 @@ def matmul(a, b):
         rarray = _matmul_MM(a.base, b.base)
         return rclass(rarray, 2, a.view)
     else:
-        raise ValueError
+        raise ValueError('matmul works on 1d and/or 2d cells (cdim)')
+
+
+def dot(a, b):
+    """Dot product of two TablArray-like parameters"""
+    a = mmul_ta_signature(a, mxdim=1)
+    b = mmul_ta_signature(b, mxdim=1)
+    # print(a)
+    # print(b)
+    rclass = a.__class__
+    if a.ts.cdim == 1 and b.ts.cdim == 1:
+        # dot product of vectors
+        rarray = np.einsum('...ij,...ij->...i', a.base, b.base)
+        return rclass(rarray, 0, a.view)
+    else:
+        raise ValueError('dot works on 1d cells (cdim)')
