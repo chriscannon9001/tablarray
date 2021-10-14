@@ -5,6 +5,13 @@ in any-dimensional tables - tablarray provides fast numpy-like array
 operations with broadcasting modified to handle both cellular-dimensions
 and tabular-dimensions at once.
 
+I recommend these Jupyter docs to pickup the big ideas:
+
+* `the Big Idea of TablArray <https://github.com/chriscannon9001/tablarray/blob/master/demo/bigidea_TablArray.ipynb>`_
+* `the Big Idea of TablaSet (work in progress) <https://github.com/chriscannon9001/tablarray/blob/master/demo/bigidea_TablaSet.ipynb>`_
+* `the Big Idea of TablaSolve (work in progress) <https://github.com/chriscannon9001/tablarray/blob/master/demo/bigidea_TablaSolve.ipynb>`_
+
+
 tablarray was originally developed to manage large numbers of optical modes.
 
 Here is a short example:
