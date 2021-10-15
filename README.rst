@@ -1,20 +1,17 @@
 Introduction
 ============
-When the best structure of data is any-dimensional cells arranged
-in any-dimensional tables - tablarray provides fast numpy-like array
-operations with broadcasting modified to handle both cellular-dimensions
-and tabular-dimensions at once.
+Some engineering or physics problems strain array representation especially due to tabulation and degeneracy. tablarray disambiguates table-of-cells data structure and extends powerful new methods into these domains.
 
-I recommend these Jupyter docs to pickup the big ideas:
+Linked below are some good introductions to the concepts
 
-* `the Big Idea of TablArray <https://github.com/chriscannon9001/tablarray/blob/master/demo/bigidea_TablArray.ipynb>`_
-* `the Big Idea of TablaSet (work in progress) <https://github.com/chriscannon9001/tablarray/blob/master/demo/bigidea_TablaSet.ipynb>`_
-* `the Big Idea of TablaSolve (work in progress) <https://github.com/chriscannon9001/tablarray/blob/master/demo/bigidea_TablaSolve.ipynb>`_
-
+* `the Big Idea of TablArray <https://github.com/chriscannon9001/tablarray/blob/master/demo/bigidea_TablArray.ipynb>`_ is to disambiguate tables of cells, which traditionally would have been stacks of arrays, or arrays of arrays. In this doc, we see that new math operators are provided with upgraded broadcasting rules, and in examples we see that we can now write formulas with a blind eye toward tabular convention as well as parameter degeneracy.
+* `the Big Idea of TablaSet (work in progress) <https://github.com/chriscannon9001/tablarray/blob/master/demo/bigidea_TablaSet.ipynb>`_ is to extend TablArray into a territory that overlaps roughly with a database, and yet we retain the speed of slicing. In fact, when we marry database and slicing concepts, a new concept emerges, called projection. As a side benefit, TablaSet also has some elegant utilities (or will soon).
+* `the Big Idea of TablaSolve (work in progress) <https://github.com/chriscannon9001/tablarray/blob/master/demo/bigidea_TablaSolve.ipynb>`_ is to build object-oriented datasets by adding computational flow on top of a TablaSet. In practice, this separates a modeling task into defining operators that solve individual dependencies, defining a seed data-set, and then handing control to the TablaSolve to resolve all of the system's dependent parameters.
 
 tablarray was originally developed to manage large numbers of optical modes.
 
-Here is a short example:
+Brief Example
+-------------
 
 
 .. code-block:: python
@@ -227,18 +224,12 @@ pip install tablarray
 
 Status
 ======
-Alpha - tablarray might be stable enough for prototype applications.
+Alpha - tablarray might be stable enough for prototype applications, though it may continue to be unstable for a while longer.
 
 I.e.:
 
-* Key features are implemented and not expected to change.
+* Critical features are implemented and not expected to change significantly.
 * A few features need further adaptation for certain cases.
-* A fair amount of testing is not done.
+* A little testing is done, most not so much.
 * Some features are still missing.
-* Packaging needs work.
-
-Todo
-====
-* Provide setup.py
-* testing
-* benchmark, cythonize, re-benchmark
+* I'm especially concerned about undesirable, or worse - undefined, behavior at edge cases.
