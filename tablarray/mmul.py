@@ -93,3 +93,16 @@ def dot(a, b):
         return rclass(rarray, 0, a.view)
     else:
         raise ValueError('dot works on 1d cells (cdim)')
+
+
+def cross(a, b):
+    """Cross product of two TablArray-like parameters"""
+    a = mmul_ta_signature(a, mxdim=1)
+    b = mmul_ta_signature(b, mxdim=1)
+    rclass = a.__class__
+    if a.ts.cdim == 1 and b.ts.cdim == 1:
+        # cross product of vectors
+        rarray = np.cross(a.base, b.base)
+        return rclass(rarray, 1, a.view)
+    else:
+        raise ValueError('cross works on 1d cells (cdim=1')
