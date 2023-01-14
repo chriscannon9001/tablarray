@@ -15,13 +15,13 @@ from . import np2ta
 
 def istablarray(a):
     """returns True/False if argument appears to fulfill TablArray class"""
-    return (hasattr(a, 'ts') and hasattr(a, 'view')
+    return (hasattr(a, 'ts') and hasattr(a, 'view') and hasattr(a, 'base')
             and hasattr(a, 'base') and hasattr(a, 'bcast'))
 
 
 def istablaset(a):
     """returns True/False if argument appears to fulfill TablaSet class"""
-    return (hasattr(a, '_tablarrays') and hasattr(a, '_ts')
+    return (hasattr(a, '_tablarrays') and hasattr(a, 'ts') and hasattr(a, 'keys')
             and hasattr(a, 'keys') and hasattr(a, 'bcast'))
 
 

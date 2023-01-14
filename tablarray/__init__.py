@@ -30,5 +30,6 @@ from .set import *
 from .solve import *
 from .stack import *
 from .ta import *
+from .taplot import *
 from .taprint import *
 from .views import *

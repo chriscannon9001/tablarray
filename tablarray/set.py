@@ -74,16 +74,19 @@ class TablaSet(object):
         Efield = ta.TablaSet(x=x, y=y, E=E, En=En)
         Exslice = Efield['x', 'E', 'En', 2, :]
 
-    TablaSet[] allows multi-level indexing:
-        keys select elements, numeric and slice indexing select within
-        TablArray elements (using 'bcast' rules).
+    As in the last example, TablaSet[] offers intelligent multi-level indexing:
+        1. (optional) str keys select elements
+            * If a single key, then a TablArray is returend.
+            * If multiple keys, a TablaSet is returned.
+            * If no keys, a TablaSet with all elements is returned.
+        2. (optional) Integer and slices can index within all selected elements.
 
     Parameters
     ----------
     **kwargs: keyword=TablArray, ..
         name1=tablarray1, name2=tablarray2, ...
 
-    With each additional element, broadcast compatibility is enforced::
+    With the addition of element, broadcast compatibility is enforced::
 
         s1 = ta.TablaSet()
         s1['x'] = ta.TablArray(np.linspace(-1, 3, 5), 0)
@@ -94,7 +97,7 @@ class TablaSet(object):
 
     def __init__(self, view='table', **kwargs):
         # this is used to track and check broadcastability
-        self._ts = None
+        self.ts = None
         # a facade for some dict methods of the table
         self._tablarrays = collections.OrderedDict()
         self.keys = self._tablarrays.keys
@@ -157,21 +160,21 @@ class TablaSet(object):
         return dataset
 
     def _set_ts(self, new_ts):
-        self._ts = new_ts
+        self.ts = new_ts
         # only allow one view
         view = self.view
         if view == 'table' or view == 'bcast':
-            self._shape = self._ts.tshape
-            self._ndim = self._ts.tdim
-            self._size = self._ts.tsize
+            self._shape = self.ts.tshape
+            self._ndim = self.ts.tdim
+            self._size = self.ts.tsize
         elif view == 'cell':
-            self._shape = self._ts.cshape
-            self._ndim = self._ts.cdim
-            self._size = self._ts.csize
+            self._shape = self.ts.cshape
+            self._ndim = self.ts.cdim
+            self._size = self.ts.csize
         elif view == 'array':
-            self._shape = (*self._ts.tshape, *self._ts.cshape)
-            self._ndim = self._ts.tdim + self._ts.cdim
-            self._size = self._ts.tsize * self._ts.csize
+            self._shape = (*self.ts.tshape, *self.ts.cshape)
+            self._ndim = self.ts.tdim + self.ts.cdim
+            self._size = self.ts.tsize * self.ts.csize
         else:
             raise ValueError
 
@@ -188,14 +191,14 @@ class TablaSet(object):
                              'type')
         # determine the new master broadcast shape
         ts = val.ts
-        if self._ts is None:
-            self._ts = ts
+        if self.ts is None:
+            self.ts = ts
         else:
-            new_ts, _ = self._ts.combine(ts)
+            new_ts, _ = self.ts.combine(ts)
             if new_ts is None:
                 raise ValueError(
                     "refused to set incompatible shape %s into shape %s"
-                    % (ts, self._ts))
+                    % (ts, self.ts))
             # keep the broadcasted shape as master
             self._set_ts(new_ts)
         if type(key) is not str:
@@ -259,26 +262,42 @@ class TablaSet(object):
         for key in self.keys():
             self[key].setview(view)
 
-    def meshtile(self, key):
-        """Tile an element so that it matches the maximum table
+    def meshtile(self, *keys):
+        """
+        Tile an element so that it matches the overarching broadcast table
         shape of the TablaSet, same as it appears when printing a bcast view.
         Often this is the preferred alternate to meshgrid.
 
         This can be useful e.g. for plotting, while normally bcast view is
-        preferred for writing formulas (for memory consumption)."""
-        bcast_tshape = self._ts.tshape
-        array = self[key]
-        tshape = array.ts.tshape
-        if bcast_tshape == tshape:
-            # skip the rest
-            return array
-        # determine the number of repetitions along each axis
-        tshape2 = np.ones(self._ts.tdim)
-        tshape2[-array.ts.tdim:] = tshape
-        repsArr = np.array(bcast_tshape)
-        repsArr[np.equal(tshape2, bcast_tshape)] = 1
-        reps = tuple(repsArr)
-        return re.tile(array.table, reps)
+        preferred for writing formulas (for memory consumption).
+
+        e.g.::
+
+            # a, b, c are given TablArray's
+            tset1 = TablaSet(a=a, b=b, c=c)
+            a_m = tset1.meshtile('a')
+            b_m, c_m = tset1.meshtile('b', 'c')
+        """
+        rvals = []
+        for key in keys:
+            bcast_tshape = self.ts.tshape
+            array = self[key]
+            tshape = array.ts.tshape
+            if bcast_tshape == tshape:
+                # skip the rest
+                return array
+            # determine the number of repetitions along each axis
+            tshape2 = np.ones(self.ts.tdim)
+            if array.ts.tdim > 0:
+                tshape2[-array.ts.tdim:] = tshape
+            repsArr = np.array(bcast_tshape)
+            repsArr[np.equal(tshape2, bcast_tshape)] = 1
+            reps = tuple(repsArr)
+            rvals.append(re.tile(array.table, reps))
+        if len(keys) == 1:
+            return rvals[0]
+        else:
+            return tuple(rvals)
 
     @property
     def bcast(self):
