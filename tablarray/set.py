@@ -59,7 +59,7 @@ class TablaSet(object):
     """
     TablaSet
     --------
-    dictionary of broadcast-able TablArray's
+    dictionary of broadcast-compatible TablArray's
 
     E.g.::
 
@@ -93,6 +93,29 @@ class TablaSet(object):
         s1['y'] = ta.TablArray([0, 0, 0], 0)
         >>> ValueError: refused to load incompatible shape t(3,)|c() into
         shape t(5,)|c()
+    
+    Properties
+    ----------
+    ts : taShape
+        describes the max broadcast shape for all elements
+    cell : TablaSet
+        returns a view of this set with all elements viewed as cells
+    table : TablaSet
+        returns a view of this set with all elements viewed as tables
+    bcast : TablaSet
+        returns a view of this set with all elements viewed as broadcast
+
+    Methods
+    -------
+    keys, items, pop : ()
+        adopted from dict
+    setview : ('cell' | 'table' | 'bcast' (default))
+        sets the view of all elements
+    meshtile : (element_key(s))
+        Returns an explicitely meshgrid version of element(s) fleshed out to
+        the max broadcast shape for this set.
+    axis_of : (element_key)
+        Returns the dimension
     """
 
     def __init__(self, view='table', **kwargs):
@@ -285,15 +308,16 @@ class TablaSet(object):
             tshape = array.ts.tshape
             if bcast_tshape == tshape:
                 # skip the rest
-                return array
-            # determine the number of repetitions along each axis
-            tshape2 = np.ones(self.ts.tdim)
-            if array.ts.tdim > 0:
-                tshape2[-array.ts.tdim:] = tshape
-            repsArr = np.array(bcast_tshape)
-            repsArr[np.equal(tshape2, bcast_tshape)] = 1
-            reps = tuple(repsArr)
-            rvals.append(re.tile(array.table, reps))
+                rvals.append(array)
+            else:
+                # determine the number of repetitions along each axis
+                tshape2 = np.ones(self.ts.tdim)
+                if array.ts.tdim > 0:
+                    tshape2[-array.ts.tdim:] = tshape
+                repsArr = np.array(bcast_tshape)
+                repsArr[np.equal(tshape2, bcast_tshape)] = 1
+                reps = tuple(repsArr)
+                rvals.append(re.tile(array.table, reps))
         if len(keys) == 1:
             return rvals[0]
         else:
@@ -317,7 +341,8 @@ class TablaSet(object):
 
     def axis_of(self, key):
         """
-        return the axis number that appear to solely index for key
+        Return the axis number that appear to solely index for key, and
+        some ectra intel about that axis.
 
         The answer is always relative to the tabular tdim of the set, i.e.
         the full shape after broadcasting.
@@ -346,7 +371,15 @@ class TablaSet(object):
         if len(axes) != 1:
             return None
         # adjust, if this array has tdim shorter than the broadcast shape
-        return axes[0] + (self._ts.tdim - array.ts.tdim)
+        ax_dim = axes[0] + (self.ts.tdim - array.ts.tdim)
+        # plus a little useful intel
+        N = self.ts.tshape[ax_dim]
+        axis = self[key]
+        beg = axis.ravel()[0]
+        end = axis.ravel()[-1]
+        sign = np.sign(end - beg)
+        xdata = dict(N=N, sign=sign, beg=beg, end=end)
+        return ax_dim, xdata
 
 
 def _survey_view(args, kwargs):

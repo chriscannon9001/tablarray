@@ -34,5 +34,6 @@ setuptools.setup(
     python_requires='>=3.2',
     install_requires=[
         'numpy',
+        'matplotlib',
         'attrs'],
     tests_require=['pytest'])

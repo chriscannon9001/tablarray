@@ -294,6 +294,7 @@ class TablArray(object):
     __rtruediv__ = op12_swap(bin_op.true_divide)
     __divmod__ = bin_op.divmod
     __rdivmod__ = op12_swap(bin_op.divmod)
+    __floordiv__ = bin_op.floor_divide
     __eq__ = bin_op.equal
     __ge__ = bin_op.greater_equal
     __gt__ = bin_op.greater
@@ -321,6 +322,12 @@ class TablArray(object):
     # === el_op has numpy unial operators (elementwise), plus ATC-wrap
     conj = el_op.conj
     conjugate = el_op.conjugate
+    __abs__ = el_op.abs
+    __complex__ = el_op.complex
+    __int__ = el_op.int
+    __invert__ = el_op.invert
+    __float__ = el_op.float
+    __neg__ = el_op.negative
 
     # cumulative functions
     cumprod = ax2_op.cumprod

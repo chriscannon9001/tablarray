@@ -6,5 +6,5 @@ Created on Sat Apr 18 11:53:23 2020
 @author: chris
 """
 
-__version__ = "0.3.4"
+__version__ = "0.3.5"
 __status__ = "Alpha"

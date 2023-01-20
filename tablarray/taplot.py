@@ -8,13 +8,30 @@ Created on Sat Jan  8 15:52:31 2022
 
 import functools
 from matplotlib import pyplot
+import numpy as np
 
 from . import misc
 #from .np2ta import passwrap as pw
 from .set import TablaSet
 
 
-def automeshtile(*args):
+def _unpack_set(tset, *args):
+    '''
+    For args of type str which are in the TablaSet arg tset, get elements out
+    of tset.
+    '''
+    args2 = []
+    keys = []
+    for arg in args:
+        if type(arg) is str and arg in tset:
+            args2.append(tset[arg])
+            keys.append(arg)
+        else:
+            args2.append(arg)
+    return tuple(args2), keys
+
+
+def _automeshtile(*args):
     '''
     For each arg which is TablArray type, add it to a temporary TablaSet,
     then extract all such args using TablaSet.meshtile, and return all args.
@@ -26,7 +43,7 @@ def automeshtile(*args):
     Primarily this is useful for calling plots. So, tablarray has duplicate
     plot methods that should look familiar from matplotlib.pyplot, e.g.
     tablarray.contourf and .plot. Those are wrapped with automeshtile, making
-    explicit meshing unnecessary for users.
+    explicit meshing unnecessary for tablarray users.
 
     Returns
     -------
@@ -34,32 +51,28 @@ def automeshtile(*args):
         TablaSet.meshtile() filtered copy of input. args of other types are
         returned unchanged.
     '''
-    tset = TablaSet()
-    N_ta = 0
+    keys = None
+    if len(args) >= 2 and misc.istablaset(args[0]):
+        args, keys = _unpack_set(*args)
+    temp_set = TablaSet()
+    is_TA = [misc.istablarray(arg) for arg in args]
+    n_TA = np.sum(is_TA)
+    index, = np.nonzero(is_TA)
+    if keys is None:
+        keys = [('a%d') % i for i in index]
     # first pass, setup a TablaSet
-    for i in range(len(args)):
+    for i in index:
         arg = args[i]
-        if misc.istablarray(arg):
-            key = 'a%d' % i
-            tset[key] = arg
-            N_ta += 1
-    args2 = []
-    for i in range(len(args)):
-        arg = args[i]
-        key = 'a%d' % i
-        arg = tset.meshtile(key) if misc.istablarray(arg) else arg
-        args2.append(arg)
-    return tuple(args2)
-
-
-def _unpack_set(tset, *args):
-    args2 = []
-    for arg in args:
-        if type(arg) is str:
-            args2.append(tset[arg])
-        else:
-            args2.append(arg)
-    return tuple(args2)
+        key = keys[i]
+        temp_set[key] = arg
+    args2 = list(args)
+    for i in index:
+        key = keys[i]
+        arg = temp_set.meshtile(key)
+        args2[i] = arg
+    xdata = dict(is_TA=is_TA, n_TA=n_TA, ind_TA=index, temp_set=temp_set,
+                 keys=keys)
+    return tuple(args2), xdata
 
 
 def _wrap_automesh(func):
@@ -68,10 +81,8 @@ def _wrap_automesh(func):
     """
     @functools.wraps(func)
     def automeshed(*args, **kwargs):
-        if len(args) >= 2 and misc.istablaset(args[0]):
-            args = _unpack_set(*args)
-        args2 = automeshtile(*args)
-        func(*tuple(args2), **kwargs)
+        args2, _ = _automeshtile(*args)
+        func(*args2, **kwargs)
     automeshed.__doc__ = (
         "**automeshed TablArray/TablaSet (passthrough)** %s\n\n" % func.__name__
         + automeshed.__doc__)
@@ -93,7 +104,6 @@ scatter = _wrap_automesh(pyplot.scatter)
 #triplot = _wrap_automesh(pyplot.triplot)
 
 
-@_wrap_automesh
 def quiver2d(*args, **kwargs):
     '''
     Plot a 2d field of arrows.
@@ -116,6 +126,7 @@ def quiver2d(*args, **kwargs):
     C : ndarray or TablArray
         optionally sets the color
     '''
+    args, _ = _automeshtile(*args)
     if len(args) == 1:
         uv = args[0]
         # factor uv vector for tuple
@@ -142,7 +153,6 @@ def quiver2d(*args, **kwargs):
     pyplot.quiver(*args2, **kwargs)
 
 
-@_wrap_automesh
 def quiver3d(*args, **kwargs):
     '''
     Plot a 3d field of arrows.
@@ -165,6 +175,7 @@ def quiver3d(*args, **kwargs):
     C : ndarray or TablArray
         optionally sets the color
     '''
+    args, _ = _automeshtile(*args)
     if len(args) == 1:
         uvw = args[0]
         # factor uv vector for tuple
@@ -195,3 +206,68 @@ def quiver3d(*args, **kwargs):
     fig = pyplot.figure()
     ax = fig.add_subplot(projection='3d')
     ax.quiver(*args2, **kwargs)
+
+
+def plot3d(*args, **kwargs):
+    '''
+    3d scatter plot
+    '''
+    args, _ = _automeshtile(*args)
+    args2 = []
+    for arg in args:
+        arg2 = arg.base.ravel() if misc.istablarray(arg) else arg
+        args2.append(arg2)
+    ax = pyplot.axes(projection='3d')
+    ax.plot(*tuple(args2), **kwargs)
+
+
+def contour3d_solidrect(*args, cbargs={'pad': 0.1}, **kwargs):
+    '''
+    Contour plots in 3d, i.e. for (x, y, z, scalar-data), display as a 3d
+    rectangular solid with 2d contours along the edge surfaces.
+
+    Note that arrays must be 3dim in cartesian coordinates, and the solid
+    must be rectangular.
+    '''
+    args, xdata = _automeshtile(*args)
+    tset = xdata['temp_set']
+    keys = xdata['keys']
+    x, y, z, data = args[:4]
+    # determine slicing
+    def _get_sliceat(ax, position):
+        ax_dim, xdata = tset.axis_of(keys[ax])
+        N = xdata['N']
+        sign = xdata['sign']
+        if sign > 0:
+            i = int(position * (N - 1) + .5)
+            mn = xdata['beg']
+            mx = xdata['end']
+        else:
+            i = int((1 - position) * (N - 1) + .5)
+            mn = xdata['end']
+            mx = xdata['beg']
+        slice0 = [slice(None), slice(None), slice(None)]
+        slice0[ax_dim] = i
+        sliced_set = tset.__getitem__(tuple(keys + slice0))
+        x0, y0, z0, data0 = sliced_set.meshtile(*tuple(keys))
+        return x0, y0, z0, data0, mn, mx
+    # plot args
+    d_mn = data.min()
+    d_mx = data.max()
+    plot_kwargs = dict(
+        vmin=d_mn, vmax=d_mx, levels=np.linspace(d_mn, d_mx, 11))
+    # do the contour plots
+    ax = pyplot.axes(projection='3d')
+    x0, y0, _, data0, zmn, zmx = _get_sliceat(2, 1)
+    ax.contourf(x0, y0, data0, zdir='z', offset=zmx, **plot_kwargs, **kwargs)
+    x0, _, z0, data0, ymn, ymx = _get_sliceat(1, 0)
+    ax.contourf(x0, data0, z0, zdir='y', offset=ymn, **plot_kwargs, **kwargs)
+    _, y0, z0, data0, xmn, xmx = _get_sliceat(0, 1)
+    C = ax.contourf(data0, y0, z0, zdir='x', offset=xmx, **plot_kwargs, **kwargs)
+    # plot the edges
+    kw_edges = dict(color='0.1', linewidth=1, zorder=1e3)
+    ax.plot([xmx, xmx], [ymn, ymx], [zmx, zmx], **kw_edges)
+    ax.plot([xmn, xmx], [ymn, ymn], [zmx, zmx], **kw_edges)
+    ax.plot([xmx, xmx], [ymn, ymn], [zmn, zmx], **kw_edges)
+    # the colorbar
+    pyplot.colorbar(C, ax=ax, **cbargs)

@@ -12,7 +12,7 @@ import unittest
 import tablarray as ta
 
 
-# I picked elementwise functions that are valid for all real numbers
+# I picked axial functions that are valid for all real numbers
 AX_FUNCS = ['sum',
             'std',
             'amax',
