@@ -28,6 +28,8 @@ class taShape(object):
     def combine(self, other):
         """combine - the new shape after broadcast of 2,
         None if incompatible"""
+        if other is None:
+            return self, None
         bc = cbroadcast.CellBroadcast.from_tshapes(self, other)
         new_shape = taShape(tuple(bc.new_shape), bc.new_cdim) if bc.valid else None
         return new_shape, bc

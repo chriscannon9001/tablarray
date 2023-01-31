@@ -85,6 +85,8 @@ def _wrap_automesh(func):
         func(*args2, **kwargs)
     automeshed.__doc__ = (
         "**automeshed TablArray/TablaSet (passthrough)** %s\n\n" % func.__name__
+        + "Where inputs are TablArray-compatible and meshing may be\n"
+        + "implied as long as the inputs are broadcast-able.\n\n"
         + automeshed.__doc__)
     return automeshed
 
@@ -114,8 +116,8 @@ def quiver2d(*args, **kwargs):
 
         quiver([X, Y], UV, [C], **kwargs)
 
-    Where X, Y, UV are broadcast compatible but meshing is not required
-    (see automeshtile).
+    Where X, Y, Z inputs are TablArray-compatible and meshing may be
+    implied as long as the inputs are broadcast-able.    
 
     Parameters
     ----------
@@ -163,8 +165,8 @@ def quiver3d(*args, **kwargs):
 
     See ax.quiver for 3d, esp. kwargs like length
 
-    Where X, Y, Z, UVW are broadcast compatible but meshing is not required
-    (see automeshtile).
+    Where X, Y, Z, UVW are TablArray-compatible and meshing may be
+    implied as long as the inputs are broadcast-able.    
 
     Parameters
     ----------
@@ -210,7 +212,10 @@ def quiver3d(*args, **kwargs):
 
 def plot3d(*args, **kwargs):
     '''
-    3d scatter plot
+    plot on 3d projected axes
+
+    Where inputs are TablArray-compatible and meshing may be
+    implied as long as the inputs are broadcast-able.    
     '''
     args, _ = _automeshtile(*args)
     args2 = []
@@ -221,10 +226,39 @@ def plot3d(*args, **kwargs):
     ax.plot(*tuple(args2), **kwargs)
 
 
-def contour3d_solidrect(*args, cbargs={'pad': 0.1}, **kwargs):
+def scatter3d(*args, c=None, **kwargs):
+    '''
+    plot on 3d projected axes
+
+    Where inputs are TablArray-compatible and meshing may be
+    implied as long as the inputs are broadcast-able.    
+    '''
+    if c is not None:
+        args0, _ = _automeshtile(*args, c)
+        c = args0[-1]
+        args = args0[:-1]
+    else:
+        args, _ = _automeshtile(*args)
+    args2 = []
+    for arg in args:
+        arg2 = arg.base.ravel() if misc.istablarray(arg) else arg
+        args2.append(arg2)
+    ax = pyplot.axes(projection='3d')
+    if c is not None:
+        kwargs['c'] = c
+    img = ax.scatter(*tuple(args2), **kwargs)
+    if c is not None:
+        fig = pyplot.gcf()
+        fig.colorbar(img)
+
+
+def contour3d_box(*args, cbargs={'pad': 0.1}, **kwargs):
     '''
     Contour plots in 3d, i.e. for (x, y, z, scalar-data), display as a 3d
-    rectangular solid with 2d contours along the edge surfaces.
+    box with 2d contours along the 3 forward edge surfaces.
+
+    Where inputs are TablArray-compatible and meshing may be
+    implied as long as the inputs are broadcast-able.    
 
     Note that arrays must be 3dim in cartesian coordinates, and the solid
     must be rectangular.

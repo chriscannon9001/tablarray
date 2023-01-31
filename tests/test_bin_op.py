@@ -22,7 +22,7 @@ BIN_FUNCS = ['add',
 
 
 class Test_BIop(unittest.TestCase):
-    """show TablArray versions of element-wise tests work the same as numpy"""
+    """show TablArray versions of binary operand tests work the same as numpy"""
 
     def setUp(self):
         """You do have to pay close attention to my reshapes calls to

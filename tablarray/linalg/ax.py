@@ -11,6 +11,6 @@ Created on Sat Jan  9 12:34:32 2021
 
 import numpy as np
 
-from ..np2ta.ax_op import _axial_broadcast
+from ..np2ta.ax_op import tawrap_ax2scalar
 
-norm = _axial_broadcast(np.linalg.norm)
+norm = tawrap_ax2scalar(np.linalg.norm)

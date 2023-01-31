@@ -285,6 +285,22 @@ class TablaSet(object):
         for key in self.keys():
             self[key].setview(view)
 
+    @property
+    def bcast(self):
+        return self.__view__('bcast')
+
+    @property
+    def table(self):
+        return self.__view__('table')
+
+    @property
+    def cell(self):
+        return self.__view__('cell')
+
+    @property
+    def array(self):
+        return self.__view__('array')
+
     def meshtile(self, *keys):
         """
         Tile an element so that it matches the overarching broadcast table
@@ -302,8 +318,8 @@ class TablaSet(object):
             b_m, c_m = tset1.meshtile('b', 'c')
         """
         rvals = []
+        bcast_tshape = self.ts.tshape
         for key in keys:
-            bcast_tshape = self.ts.tshape
             array = self[key]
             tshape = array.ts.tshape
             if bcast_tshape == tshape:
@@ -323,21 +339,17 @@ class TablaSet(object):
         else:
             return tuple(rvals)
 
-    @property
-    def bcast(self):
-        return self.__view__('bcast')
-
-    @property
-    def table(self):
-        return self.__view__('table')
-
-    @property
-    def cell(self):
-        return self.__view__('cell')
-
-    @property
-    def array(self):
-        return self.__view__('array')
+    def degeneracy(self, key):
+        """
+        Return a truth table indicating which dimensions of master broadcast
+        tabular-shape which are degenerate for key. (Ignores cellular shape).
+        """
+        array = self[key]
+        del_dim = self.ts.tdim - array.ts.tdim
+        tshape = np.ones(self.ts.tdim)
+        tshape[del_dim:] = array.ts.tshape
+        bcshape = np.array(self.ts.tshape)
+        return bcshape > tshape
 
     def axis_of(self, key):
         """
@@ -356,22 +368,15 @@ class TablaSet(object):
         -------
         axis : int or None
             Axis number, or None if key changes along more than one axis.
+        xdata : dict
+            N, int, length of axis
+            sign, +1/-1, indicates ascending or descending order
+            beg, end, first and last value of the axis
         """
-        array = self[key].table
-
-        axes = []
-        slice0 = [0] * array.ts.tdim
-        for i in range(array.ts.tdim):
-            if array.ts.tshape[i] > 1:
-                slice1 = slice0[: i] + [1] + slice0[i + 1:]
-                d_array = (array.__getitem__(tuple(slice1))
-                           - array.__getitem__(tuple(slice0)))
-                if not np.all(np.isclose(d_array, 0)):
-                    axes.append(i)
-        if len(axes) != 1:
+        isaxis = np.logical_not(self.degeneracy(key))
+        if np.sum(isaxis) != 1:
             return None
-        # adjust, if this array has tdim shorter than the broadcast shape
-        ax_dim = axes[0] + (self.ts.tdim - array.ts.tdim)
+        ax_dim = np.nonzero(isaxis)[0][0]
         # plus a little useful intel
         N = self.ts.tshape[ax_dim]
         axis = self[key]

@@ -12,9 +12,14 @@ import numpy as np
 from .. import misc
 
 
-def _axial_broadcast(func):
-    """ACT compatibility for unary operands where one or more axes transform
-    to a scalar (axis -> scalar)"""
+def tawrap_ax2scalar(func):
+    """
+    TablArray wrap for numpy-compatible functions which have unary operands
+    where one or more axes transform to a scalar (axis -> scalar)
+
+    After wrap, the function will allow TablArray-like inputs including
+    np.ndarray, or scalar.
+    """
     @functools.wraps(func)
     def wrap_ax_bcast(a, axis=None, **kwargs):
         if misc.istablarray(a):
@@ -48,29 +53,29 @@ def _axial_broadcast(func):
 
 
 # these are also available as methods
-all = _axial_broadcast(np.all)
-any = _axial_broadcast(np.any)
-argmax = _axial_broadcast(np.argmax)
-argmin = _axial_broadcast(np.argmin)
-max = _axial_broadcast(np.max)
-mean = _axial_broadcast(np.mean)
-min = _axial_broadcast(np.min)
-prod = _axial_broadcast(np.prod)
-std = _axial_broadcast(np.std)
-sum = _axial_broadcast(np.sum)
+all = tawrap_ax2scalar(np.all)
+any = tawrap_ax2scalar(np.any)
+argmax = tawrap_ax2scalar(np.argmax)
+argmin = tawrap_ax2scalar(np.argmin)
+max = tawrap_ax2scalar(np.max)
+mean = tawrap_ax2scalar(np.mean)
+min = tawrap_ax2scalar(np.min)
+prod = tawrap_ax2scalar(np.prod)
+std = tawrap_ax2scalar(np.std)
+sum = tawrap_ax2scalar(np.sum)
 
 # these are only available here - not as methods
-amax = _axial_broadcast(np.amax)
-amin = _axial_broadcast(np.amin)
-median = _axial_broadcast(np.median)
-nanargmax = _axial_broadcast(np.nanargmax)
-nanargmin = _axial_broadcast(np.nanargmin)
-nanmax = _axial_broadcast(np.nanmax)
-nanmean = _axial_broadcast(np.nanmean)
-nanmedian = _axial_broadcast(np.nanmedian)
-nanmin = _axial_broadcast(np.nanmin)
-nanprod = _axial_broadcast(np.nanprod)
-nansum = _axial_broadcast(np.nansum)
-nanstd = _axial_broadcast(np.nanstd)
-nanvar = _axial_broadcast(np.nanvar)
-var = _axial_broadcast(np.var)
+amax = tawrap_ax2scalar(np.amax)
+amin = tawrap_ax2scalar(np.amin)
+median = tawrap_ax2scalar(np.median)
+nanargmax = tawrap_ax2scalar(np.nanargmax)
+nanargmin = tawrap_ax2scalar(np.nanargmin)
+nanmax = tawrap_ax2scalar(np.nanmax)
+nanmean = tawrap_ax2scalar(np.nanmean)
+nanmedian = tawrap_ax2scalar(np.nanmedian)
+nanmin = tawrap_ax2scalar(np.nanmin)
+nanprod = tawrap_ax2scalar(np.nanprod)
+nansum = tawrap_ax2scalar(np.nansum)
+nanstd = tawrap_ax2scalar(np.nanstd)
+nanvar = tawrap_ax2scalar(np.nanvar)
+var = tawrap_ax2scalar(np.var)

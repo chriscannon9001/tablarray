@@ -40,14 +40,13 @@ def _ragged_loader(outarray, lla):
 
 class TablArray(object):
     """
-    TablArray (Table-Array-Cell)
-    ----------------------
+    TablArray (Table-Array)
+    -----------------------
     When the best structure of data is any-dimensional cells arranged
     in any-dimensional tables - TablArray provides fast numpy-like array
     operations with broadcasting to handle both cellular-dim (cdim)
     and tabular-dim (tdim) at once. Indexing and slicing follow rules of
     different views; .cell[] .table[] or .array[].
-    Originally developed to manage large numbers of optical modes.
 
     Selected signatures::
 
@@ -207,6 +206,9 @@ class TablArray(object):
         # LOG.warning('Passing self.base.%s ...dangerous?', attr)
         return getattr(self.base, attr)
 
+    def __len__(self):
+        return self.shape[0] if len(self.shape) > 0 else 0
+
     # ==== getters have delayed iteration, for properties which are views
     @property
     def real(self):
@@ -323,10 +325,7 @@ class TablArray(object):
     conj = el_op.conj
     conjugate = el_op.conjugate
     __abs__ = el_op.abs
-    __complex__ = el_op.complex
-    __int__ = el_op.int
     __invert__ = el_op.invert
-    __float__ = el_op.float
     __neg__ = el_op.negative
 
     # cumulative functions
