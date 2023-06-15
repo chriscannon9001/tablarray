@@ -41,7 +41,8 @@ class taShape(object):
         # calculate cdim for cellular aligned slice
         cdim = self.cdim
         for idx in cslice:
-            if idx != slice(None):
+            #if idx != slice(None):  # FIXME: dim doesn't drop for any slice
+            if type(idx) is not slice:
                 cdim -= 1
         assert len(cslice) <= self.cdim, (
                 'got len(*cslice)==%d instead of required <=%d'

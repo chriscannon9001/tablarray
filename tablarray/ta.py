@@ -81,7 +81,7 @@ class TablArray(object):
         or taShapes type
     """
 
-    def __init__(self, a, cdim, view='table'):
+    def __init__(self, a, cdim, view='cell'):
         # ensure type of self.base
         if isinstance(a, np.ndarray):
             self.base = a          # based on ndarray

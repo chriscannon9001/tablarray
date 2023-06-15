@@ -15,65 +15,97 @@ from . import misc
 from .set import TablaSet
 
 
-def _unpack_set(tset, *args):
-    '''
-    For args of type str which are in the TablaSet arg tset, get elements out
-    of tset.
-    '''
-    args2 = []
-    keys = []
-    for arg in args:
-        if type(arg) is str and arg in tset:
-            args2.append(tset[arg])
-            keys.append(arg)
-        else:
-            args2.append(arg)
-    return tuple(args2), keys
+class _MeshfilterArgs():
+    def __init__(self, *args, returnbaseonly=True):
+        '''
+        For each arg which is TablArray type, add it to a temporary TablaSet,
+        then extract all such args using TablaSet.meshtile.
+
+        * All args of TablArray-type must be broadcast compatible.
+        * Then after the return, the args will be meshed to flesh out
+        their mutual broadcast shape.
+
+        Primarily this is useful for calling plots. So, tablarray has duplicate
+        plot methods that should look familiar from matplotlib.pyplot, e.g.
+        tablarray.contourf and .plot. Those are wrapped with automeshtile,
+        making explicit meshing unnecessary for tablarray users.
+        '''
+        self._returnbaseonly = returnbaseonly
+        keys = None
+        if len(args) >= 2 and misc.istablaset(args[0]):
+            args, keys = self._unpack_from_tablaset(*args)
+            self.keymeaning = True
+        self.is_TA = [misc.istablarray(arg) for arg in args]
+        n_TA = np.sum(self.is_TA)
+        index, = np.nonzero(self.is_TA)
+        if keys is None:
+            keys = [('a%d') % i for i in index]
+            self.keymeaning = False
+        # first pass, setup a TablaSet
+        self.as_set = TablaSet()
+        for i in index:
+            arg = args[i]
+            key = keys[i]
+            self.as_set[key] = arg
+        self.keys = keys
+        self.xdata = dict(n_TA=n_TA, ind_TA=index)
+        self._args = list(args)
+        self.index = index
+        self.n_TA = n_TA
+
+    def args(self):
+        # second pass, pull args from the temp_set.meshtile
+        for i in self.index:
+            key = self.keys[i]
+            if self._returnbaseonly:
+                arg = self.as_set.meshtile(key).base
+            else:
+                arg = self.as_set.meshtile(key)
+            self._args[i] = arg
+        return self._args
+
+    def _unpack_from_tablaset(self, tset, *args):
+        '''
+        For args of type str which are in the TablaSet arg tset, get elements out
+        of tset.
+        '''
+        args2 = []
+        keys = []
+        for arg in args:
+            if type(arg) is str and arg in tset:
+                args2.append(tset[arg])
+                keys.append(arg)
+            else:
+                args2.append(arg)
+        return tuple(args2), keys
+
+    def dim_reduced(self):
+        # should the return value be another MeshFilterAargs
+        # or same as args?
+        if self.n_TA <= 1:
+            return False, self
+        main = self.keys[self.index[-1]]
+        degeneracy = self.as_set.degeneracy(main)
+        # 
+        keys = []
+        slices = [slice(None)] * self.n_TA
+        for i in self.index:
+            ax, _ = self.as_set.axis_of(self.keys[i])
+            if (ax is not None) and degeneracy[ax]:
+                print('found a degeneracy at arg %d, ax %d' % (i, ax))
+                slices[ax] = 0
+            else:
+                keys.append(self.keys[i])
+        # for each degeneracy, kill off the arg, AND reshape without that dim
+        print(tuple(keys + slices))
+        reduced_set = self.as_set.bcast.__getitem__(tuple(keys + slices))
+        print(reduced_set)
+        reduced_mfa = _MeshfilterArgs(reduced_set, *tuple(keys),
+                                      returnbaseonly=self._returnbaseonly)
+        return reduced_mfa
 
 
-def _automeshtile(*args):
-    '''
-    For each arg which is TablArray type, add it to a temporary TablaSet,
-    then extract all such args using TablaSet.meshtile, and return all args.
-
-    1. First, this means all TablArray args must be broadcast compatible.
-    2. This means after the return, the args will be meshed to flesh out their
-    broadcast shape.
-
-    Primarily this is useful for calling plots. So, tablarray has duplicate
-    plot methods that should look familiar from matplotlib.pyplot, e.g.
-    tablarray.contourf and .plot. Those are wrapped with automeshtile, making
-    explicit meshing unnecessary for tablarray users.
-
-    Returns
-    -------
-    args : tuple
-        TablaSet.meshtile() filtered copy of input. args of other types are
-        returned unchanged.
-    '''
-    keys = None
-    if len(args) >= 2 and misc.istablaset(args[0]):
-        args, keys = _unpack_set(*args)
-    temp_set = TablaSet()
-    is_TA = [misc.istablarray(arg) for arg in args]
-    n_TA = np.sum(is_TA)
-    index, = np.nonzero(is_TA)
-    if keys is None:
-        keys = [('a%d') % i for i in index]
-    # first pass, setup a TablaSet
-    for i in index:
-        arg = args[i]
-        key = keys[i]
-        temp_set[key] = arg
-    args2 = list(args)
-    for i in index:
-        key = keys[i]
-        arg = temp_set.meshtile(key)
-        args2[i] = arg
-    xdata = dict(is_TA=is_TA, n_TA=n_TA, ind_TA=index, temp_set=temp_set,
-                 keys=keys)
-    return tuple(args2), xdata
-
+#=== plots which use TablaSet.meshtile then fall back on ndarray only ===/
 
 def _wrap_automesh(func):
     """
@@ -81,8 +113,10 @@ def _wrap_automesh(func):
     """
     @functools.wraps(func)
     def automeshed(*args, **kwargs):
-        args2, _ = _automeshtile(*args)
+        mfa = _MeshfilterArgs(*args)
+        args2 = mfa.args()
         func(*args2, **kwargs)
+        # maybe FIXME: consider maybe using mfa.keymeaning or not
     automeshed.__doc__ = (
         "**automeshed TablArray/TablaSet (passthrough)** %s\n\n" % func.__name__
         + "Where inputs are TablArray-compatible and meshing may be\n"
@@ -106,6 +140,8 @@ scatter = _wrap_automesh(pyplot.scatter)
 #triplot = _wrap_automesh(pyplot.triplot)
 
 
+#=== plots which use TablArray and TablaSet features ===/
+
 def quiver2d(*args, **kwargs):
     '''
     Plot a 2d field of arrows.
@@ -128,7 +164,8 @@ def quiver2d(*args, **kwargs):
     C : ndarray or TablArray
         optionally sets the color
     '''
-    args, _ = _automeshtile(*args)
+    mfa = _MeshfilterArgs(*args, returnbaseonly=False)
+    args = mfa.args()
     if len(args) == 1:
         uv = args[0]
         # factor uv vector for tuple
@@ -177,7 +214,8 @@ def quiver3d(*args, **kwargs):
     C : ndarray or TablArray
         optionally sets the color
     '''
-    args, _ = _automeshtile(*args)
+    mfa = _MeshfilterArgs(*args, returnbaseonly=False)
+    args = mfa.args()
     if len(args) == 1:
         uvw = args[0]
         # factor uv vector for tuple
@@ -217,7 +255,8 @@ def plot3d(*args, **kwargs):
     Where inputs are TablArray-compatible and meshing may be
     implied as long as the inputs are broadcast-able.    
     '''
-    args, _ = _automeshtile(*args)
+    mfa = _MeshfilterArgs(*args, returnbaseonly=False)
+    args = mfa.args()
     args2 = []
     for arg in args:
         arg2 = arg.base.ravel() if misc.istablarray(arg) else arg
@@ -234,11 +273,15 @@ def scatter3d(*args, c=None, **kwargs):
     implied as long as the inputs are broadcast-able.    
     '''
     if c is not None:
-        args0, _ = _automeshtile(*args, c)
+        mfa = _MeshfilterArgs(*args, c, returnbaseonly=False)
+        args0 = mfa.args()
+        #args0, _ = _automeshtile(*args, c)
         c = args0[-1]
         args = args0[:-1]
     else:
-        args, _ = _automeshtile(*args)
+        mfa = _MeshfilterArgs(*args, returnbaseonly=False)
+        args = mfa.args()
+        #args, _ = _automeshtile(*args)
     args2 = []
     for arg in args:
         arg2 = arg.base.ravel() if misc.istablarray(arg) else arg
@@ -263,9 +306,13 @@ def contour3d_box(*args, cbargs={'pad': 0.1}, **kwargs):
     Note that arrays must be 3dim in cartesian coordinates, and the solid
     must be rectangular.
     '''
-    args, xdata = _automeshtile(*args)
-    tset = xdata['temp_set']
-    keys = xdata['keys']
+    #args, xdata = _automeshtile(*args)
+    #tset = xdata['temp_set']
+    #keys = xdata['keys']
+    mfa = _MeshfilterArgs(*args, returnbaseonly=False)
+    args = mfa.args()
+    tset = mfa.as_set
+    keys = mfa.keys
     x, y, z, data = args[:4]
     # determine slicing
     def _get_sliceat(ax, position):

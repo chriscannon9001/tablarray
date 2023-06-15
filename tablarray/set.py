@@ -375,7 +375,7 @@ class TablaSet(object):
         """
         isaxis = np.logical_not(self.degeneracy(key))
         if np.sum(isaxis) != 1:
-            return None
+            return None, {}
         ax_dim = np.nonzero(isaxis)[0][0]
         # plus a little useful intel
         N = self.ts.tshape[ax_dim]
