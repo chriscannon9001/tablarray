@@ -28,5 +28,5 @@ def mmul_ta_signature(arg, mxdim):
     elif np.isscalar(arg):
         array = ta.TablArray(np.array(arg), 0)
     else:
-        raise ValueError('matmul can only work on TablArray-like args')
+        raise ValueError('requires TablArray-like args')
     return array

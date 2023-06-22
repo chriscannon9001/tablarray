@@ -89,7 +89,7 @@ def dot(a, b):
     rclass = a.__class__
     if a.ts.cdim == 1 and b.ts.cdim == 1:
         # dot product of vectors
-        rarray = np.einsum('...ij,...ij->...i', a.base, b.base)
+        rarray = np.einsum('...i,...i->...', a.base, b.base)
         return rclass(rarray, 0, a.view)
     else:
         raise ValueError('dot works on 1d cells (cdim)')
