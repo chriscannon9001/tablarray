@@ -118,7 +118,7 @@ class TablaSet(object):
         Returns the dimension
     """
 
-    def __init__(self, view='table', **kwargs):
+    def __init__(self, view='cell', **kwargs):
         # this is used to track and check broadcastability
         self.ts = None
         # a facade for some dict methods of the table

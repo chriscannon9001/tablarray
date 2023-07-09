@@ -12,12 +12,20 @@ import numpy as np
 from .. import misc
 
 
-def _axial2_broadcast(func):
+def _axial2_broadcast(func, default_view=None):
     """ACT compatibility for unary operands where number of dimensions
     does not change"""
+    _doc_prepend = ("    **TablArray compatible** %s, where axis aligns w.r.t. view\n\n" % func.__name__
+                    + "    view: 'cell', 'table', or None (default=%s)\n" % default_view
+                    + "        overrides a.view if istablarray(a)\n"
+                    + "    -----\n\n")
     @functools.wraps(func)
-    def wrapped_cum_atc(a, axis=None, **kwargs):
+    def wrapped_ax2_bcast(a, axis=None, view=default_view, **kwargs):
         if misc.istablarray(a):
+            if type(view) is str:
+                # get view of a (same as a.cell or a.table)
+                # not a.setview which alters input parameter
+                a = a.__getattribute__(view)
             axis = a._viewdims[axis]
             rarray = func(a.base, axis=axis, **kwargs)
             rclass = a.__class__
@@ -26,7 +34,9 @@ def _axial2_broadcast(func):
         else:
             # pass through to numpy
             return func(a, axis=axis, **kwargs)
-    return wrapped_cum_atc
+    wrapped_ax2_bcast.__doc__ = (
+        _doc_prepend + wrapped_ax2_bcast.__doc__)
+    return wrapped_ax2_bcast
 
 
 cumprod = _axial2_broadcast(np.cumprod)

@@ -13,4 +13,4 @@ import numpy as np
 
 from ..np2ta.ax_op import tawrap_ax2scalar
 
-norm = tawrap_ax2scalar(np.linalg.norm)
+norm = tawrap_ax2scalar(np.linalg.norm, default_view='cell')
