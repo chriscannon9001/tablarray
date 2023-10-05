@@ -9,8 +9,6 @@ Created on Sun Jan  3 15:34:31 2021
 """
 
 import numpy as np
-from .tashape import taShape
-from . import np2ta
 
 
 def istablarray(a):
@@ -28,16 +26,6 @@ def istablaset(a):
 def base(a):
     """returns .base if argument is tablarray else pass-through a"""
     return a.base if istablarray(a) else a
-
-
-def imply_zeros(a, *args):
-    """based on TablArray inputs, """
-    ts0 = taShape((), 0)
-    ts, bc = a.ts.combine(ts0)
-    for arg in args:
-        ts, bc = ts.combine(arg.ts)
-    # now make zeros with ts
-    return np2ta.zeros((*ts.tshape, *ts.cshape), ts.cdim)
 
 
 def _rval_once_a_ta(rclass, rval, cdim, view):
@@ -94,3 +82,4 @@ def _get_1st_obj(ll):
     if type(ll) is not list:
         return ll
     return _get_1st_obj(ll[0])
+

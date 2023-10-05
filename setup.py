@@ -30,10 +30,13 @@ setuptools.setup(
     url = 'https://github.com/chriscannon9001/tablarray',
     packages=setuptools.find_packages(include=[
         'tablarray', 'tablarray.kwtools', 'tablarray.linalg',
-        'tablarray.np2ta', 'tablarray.tests']),
+        'tablarray.wraps', 'tablarray.tanumpy', 'tablarray.tascipy',
+        'tablarray.tests']),
     python_requires='>=3.2',
     install_requires=[
         'numpy',
         'matplotlib',
         'attrs'],
-    tests_require=['pytest'])
+    tests_require=['pytest'],
+    extras_require={
+        'tascipy': ['scipy']})

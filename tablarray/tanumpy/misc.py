@@ -9,8 +9,9 @@ Created on Sat Jun 13 17:31:44 2020
 import functools
 import numpy as np
 
-from .ax_op import all
-from .bin_op import isclose
+#from .ax_op import all
+#from .bin_op import isclose
+from .__init__ import all, isclose
 
 # numpy has shape and size that already work properly for TablArray
 shape = np.shape

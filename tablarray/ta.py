@@ -6,22 +6,16 @@ Created on Mon Apr 27 17:39:50 2020
 @author: chris
 """
 
-import copy
-import logging
-import numpy as np
+import copy as _copy
+import numpy as _np
 
-from .np2ta import ax_op
-from .np2ta import ax2_op
-from .np2ta import bin_op
-from .np2ta import el_op
-from .np2ta.op12swap import op12_swap
+from .tanumpy import np_func as _np2ta
+from . import mmul
 from . import re
 from . import tashape
 from . import taprint
 from . import misc
-from . import mmul
-
-LOG = logging.getLogger(__name__)
+from .wraps.op12swap import op12_swap as _op12_swap
 
 
 def _ragged_loader(outarray, lla):
@@ -83,15 +77,15 @@ class TablArray(object):
 
     def __init__(self, a, cdim, view='cell'):
         # ensure type of self.base
-        if isinstance(a, np.ndarray):
+        if isinstance(a, _np.ndarray):
             self.base = a          # based on ndarray
         elif misc.istablarray(a):
             self.base = a.base    # based on ATC type
             cdim = a.ts
         else:
-            self.base = np.array(a)  # try casting to ndarray
+            self.base = _np.array(a)  # try casting to ndarray
         # ts has derived parameters
-        if np.isscalar(cdim):
+        if _np.isscalar(cdim):
             self.ts = tashape.taShape((self.base.shape), cdim)
         elif hasattr(cdim, 'cdim') and hasattr(cdim, 'combine'):
             # if cdim is of taShapes type
@@ -104,9 +98,9 @@ class TablArray(object):
     @classmethod
     def from_tile(cls, cell, tshape, view='table'):
         """create a table by tiling a cell"""
-        cdim = 0 if np.isscalar(cell) else cell.ndim
+        cdim = 0 if _np.isscalar(cell) else cell.ndim
         shape2 = tuple([1] * cdim)
-        a = np.tile(cell, (*tshape, *shape2))
+        a = _np.tile(cell, (*tshape, *shape2))
         return cls(a, cdim, view)
 
     @classmethod
@@ -131,12 +125,12 @@ class TablArray(object):
             'table' 'bcast' 'cell' or 'array'
         """
         obj0 = misc._get_1st_obj(lla)
-        cshape = np.shape(obj0)
+        cshape = _np.shape(obj0)
         if blank is None:
-            a = np.array(lla)
+            a = _np.array(lla)
         else:
             tshape = misc._imply_shape_ragged(lla)
-            a = np.empty((*tshape, *cshape), dtype=dtype)
+            a = _np.empty((*tshape, *cshape), dtype=dtype)
             a[:] = blank
             _ragged_loader(a, lla)
         return cls(a, len(cshape), view)
@@ -148,11 +142,11 @@ class TablArray(object):
 
     def __copy__(self):
         """returns an independent copy"""
-        return TablArray(copy.copy(self.base), self.ts.cdim, self.view)
+        return TablArray(_copy.copy(self.base), self.ts.cdim, self.view)
 
     def __deepcopy__(self, memo):
         """returns an indepenedent deepcopy"""
-        return TablArray(copy.deepcopy(self.base), self.ts.cdim, self.view)
+        return TablArray(_copy.deepcopy(self.base), self.ts.cdim, self.view)
 
     __str__ = taprint.tablarray2string
 
@@ -283,55 +277,50 @@ class TablArray(object):
         return self.base.__setitem__(indices, val)
 
     # bin_op has numpy binary operators plus an ATC-wrap
-    __add__ = bin_op.add
-    __radd__ = op12_swap(bin_op.add)
-    __sub__ = bin_op.subtract
+    __add__ = _np2ta.add
+    __radd__ = _op12_swap(_np2ta.add)
+    __sub__ = _np2ta.subtract
     # for non-commutative operations, op12_swap flips order of self,other
-    __rsub__ = op12_swap(bin_op.subtract)
-    __mul__ = bin_op.multiply
-    __rmul__ = op12_swap(bin_op.multiply)
-    __pow__ = bin_op.power
-    __rpow__ = op12_swap(bin_op.power)
-    __truediv__ = bin_op.true_divide
-    __rtruediv__ = op12_swap(bin_op.true_divide)
-    __divmod__ = bin_op.divmod
-    __rdivmod__ = op12_swap(bin_op.divmod)
-    __floordiv__ = bin_op.floor_divide
-    __eq__ = bin_op.equal
-    __ge__ = bin_op.greater_equal
-    __gt__ = bin_op.greater
-    __le__ = bin_op.less_equal
-    __lt__ = bin_op.less
-    __and__ = bin_op.logical_and
-    __or__ = bin_op.logical_or
-    __xor__ = bin_op.logical_xor
-
+    __rsub__ = _op12_swap(_np2ta.subtract)
+    __mul__ = _np2ta.multiply
+    __rmul__ = _op12_swap(_np2ta.multiply)
+    __pow__ = _np2ta.power
+    __rpow__ = _op12_swap(_np2ta.power)
+    __truediv__ = _np2ta.true_divide
+    __rtruediv__ = _op12_swap(_np2ta.true_divide)
+    __divmod__ = _np2ta.divmod
+    __rdivmod__ = _op12_swap(_np2ta.divmod)
+    __floordiv__ = _np2ta.floor_divide
+    __eq__ = _np2ta.equal
+    __ge__ = _np2ta.greater_equal
+    __gt__ = _np2ta.greater
+    __le__ = _np2ta.less_equal
+    __lt__ = _np2ta.less
+    __and__ = _np2ta.logical_and
+    __or__ = _np2ta.logical_or
+    __xor__ = _np2ta.logical_xor
     # matmul
     __matmul__ = mmul.matmul
-
     # ax_op has numpy unial operators (axis->scalar), plus an ATC-wrap
-    all = ax_op.all
-    any = ax_op.any
-    argmax = ax_op.argmax
-    argmin = ax_op.argmin
-    max = ax_op.max
-    mean = ax_op.mean
-    min = ax_op.min
-    prod = ax_op.prod
-    std = ax_op.std
-    sum = ax_op.sum
-
+    all = _np2ta.all
+    any = _np2ta.any
+    argmax = _np2ta.argmax
+    argmin = _np2ta.argmin
+    max = _np2ta.max
+    mean = _np2ta.mean
+    min = _np2ta.min
+    prod = _np2ta.prod
+    std = _np2ta.std
+    sum = _np2ta.sum
     # === el_op has numpy unial operators (elementwise), plus ATC-wrap
-    conj = el_op.conj
-    conjugate = el_op.conjugate
-    __abs__ = el_op.abs
-    __invert__ = el_op.invert
-    __neg__ = el_op.negative
-
+    conj = _np2ta.conj
+    conjugate = _np2ta.conjugate
+    __abs__ = _np2ta.abs
+    __invert__ = _np2ta.invert
+    __neg__ = _np2ta.negative
     # cumulative functions
-    cumprod = ax2_op.cumprod
-    cumsum = ax2_op.cumsum
-
+    cumprod = _np2ta.cumprod
+    cumsum = _np2ta.cumsum
     # reshaping and flattening that considers TablArray form
     reshape = re.reshape
     ravel = re.ravel
@@ -340,4 +329,4 @@ class TablArray(object):
         """"Return a copy of the TablArray collapsed
         along tabular or cellular structure into 1 dimension
         """
-        return copy.copy(re.ravel(self, order=order))
+        return _copy.copy(re.ravel(self, order=order))

@@ -17,12 +17,10 @@ Created on Fri May 15 17:40:41 2020
 @author: chris
 """
 
-from . import linalg
-from .np2ta import *
+from .tanumpy import *
 
 from .version import __version__, __status__
 
-from .cmatmul import *
 from .misc import *
 from .mmul import *
 from .re import *

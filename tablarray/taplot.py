@@ -33,7 +33,7 @@ class _MeshfilterArgs():
         self._returnbaseonly = returnbaseonly
         keys = None
         if len(args) >= 2 and misc.istablaset(args[0]):
-            args, keys = self._unpack_from_tablaset(*args)
+            args, keys = misc._unpack_from_tablaset(*args)
             self.keymeaning = True
         self.is_TA = [misc.istablarray(arg) for arg in args]
         n_TA = np.sum(self.is_TA)
@@ -63,21 +63,6 @@ class _MeshfilterArgs():
                 arg = self.as_set.meshtile(key)
             self._args[i] = arg
         return self._args
-
-    def _unpack_from_tablaset(self, tset, *args):
-        '''
-        For args of type str which are in the TablaSet arg tset, get elements out
-        of tset.
-        '''
-        args2 = []
-        keys = []
-        for arg in args:
-            if type(arg) is str and arg in tset:
-                args2.append(tset[arg])
-                keys.append(arg)
-            else:
-                args2.append(arg)
-        return tuple(args2), keys
 
     def dim_reduced(self):
         # should the return value be another MeshFilterAargs

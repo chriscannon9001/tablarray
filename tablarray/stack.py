@@ -12,7 +12,7 @@ import functools
 import numpy as np
 
 from . import misc
-from .np2ta import cbroadcast
+from .wraps import cbroadcast
 import tablarray as ta
 
 
@@ -52,7 +52,8 @@ def _cast_other_types(arrays, view=None):
                 else:
                     # if the first array is tabular, lists broadcast to tabular
                     cdim = 0
-                arrays[i] = ta.TablArray(a, cdim, view=view)
+                rclass = first_ta.__class__
+                arrays[i] = rclass(a, cdim, view=view)
     return arrays
 
 

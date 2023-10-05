@@ -9,7 +9,7 @@ Created on Mon Apr 27 15:58:10 2020
 import copy
 import numpy as np
 
-from .np2ta import cbroadcast
+from .wraps import cbroadcast
 
 
 class taShape(object):

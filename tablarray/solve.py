@@ -37,7 +37,7 @@ import numpy as np
 import re
 
 from . import misc
-from . import np2ta
+from . import tanumpy as tanumpy
 
 
 def _dummy_viewarg(arg):
@@ -331,7 +331,7 @@ class TablaSolver(object):
         prior = self._prior_state[key]
         current = self.tset[key]
         # missing: I want a method for specifying atol or rtol per key
-        haschanged = not np2ta.allclose(prior, current)
+        haschanged = not tanumpy.allclose(prior, current)
         return haschanged
 
     def _update_haschanged(self):
@@ -343,7 +343,7 @@ class TablaSolver(object):
             else:
                 old = prior_state[key]
                 current = self.tset[key]
-                has_changed = not np2ta.allclose(old, current)
+                has_changed = not tanumpy.allclose(old, current)
             self._haschanged[key] = has_changed
         self._prior_state = copy.copy(self.tset)
 

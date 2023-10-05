@@ -13,7 +13,7 @@ import numpy as np
 # from . import _tabstr
 from . import taprint
 from . import misc
-from . import ta
+from .ta import TablArray
 from . import re
 
 
@@ -171,14 +171,14 @@ class TablaSet(object):
             tshape = misc._imply_shape(lld)
             unlayered = _recursive_loader1(lld)
             for key, val in unlayered.items():
-                dataset[key] = ta.TablArray(val, len(cshapes[key]))
+                dataset[key] = TablArray(val, len(cshapes[key]))
         else:
             tshape = misc._imply_shape_ragged(lld)
             for key in keys:
                 array = np.empty((*tshape, *cshapes[key]), dtype=dtype)
                 array[:] = blank
                 print(tshape, cshapes[key])
-                dataset[key] = ta.TablArray(array, len(cshapes[key]))
+                dataset[key] = TablArray(array, len(cshapes[key]))
             _recursive_loader2(dataset, lld)
         return dataset
 
@@ -206,9 +206,9 @@ class TablaSet(object):
         # in other words, arrays and ATC's may be mixed, in which case
         # arrays are aligned to the cellular shape of the ATC's
         if isinstance(val, np.ndarray):
-            val = ta.TablArray(val, val.ndim)
+            val = TablArray(val, val.ndim)
         elif np.isscalar(val):
-            val = ta.TablArray(val, 0)
+            val = TablArray(val, 0)
         if not misc.istablarray(val):
             raise ValueError('values in Array need to be array or TablArray'
                              'type')
